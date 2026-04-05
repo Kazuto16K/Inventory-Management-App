@@ -51,6 +51,8 @@ public class Reports extends AppCompatActivity {
 
     // cached item list for export
     private List<InventoryItem> cachedItems;
+    private Map<String, Integer> cachedQtySold = new HashMap<>();
+    private Map<String, String> cachedCustomers = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,11 +103,26 @@ public class Reports extends AppCompatActivity {
             firestore.collection("sales").get().addOnSuccessListener(snapshot -> {
 
                 Map<String, Integer> totals = new HashMap<>();
+                cachedQtySold.clear();
+                cachedCustomers.clear();
+
                 for (DocumentSnapshot doc : snapshot) {
                     String itemId = doc.getString("item_id");
                     Long qty = doc.getLong("quantity");
+                    String customer = doc.getString("customer");
+
                     if (itemId != null && qty != null) {
                         totals.put(itemId, totals.getOrDefault(itemId, 0) + qty.intValue());
+                        cachedQtySold.put(itemId, cachedQtySold.getOrDefault(itemId, 0) + qty.intValue());
+                        
+                        if (customer != null && !customer.trim().isEmpty()) {
+                            String current = cachedCustomers.getOrDefault(itemId, "");
+                            if (current.isEmpty()) {
+                                cachedCustomers.put(itemId, customer);
+                            } else if (!current.contains(customer)) {
+                                cachedCustomers.put(itemId, current + ", " + customer);
+                            }
+                        }
                     }
                 }
 
@@ -224,13 +241,18 @@ public class Reports extends AppCompatActivity {
         try (FileOutputStream fos = new FileOutputStream(outFile)) {
 
             // Header
-            String header = "ID,Name,Category,Quantity,Price,MinStock,Description,CreatedAt\n";
+            String header = "S.No,ID,Name,Category,Quantity,Price,MinStock,Description,CreatedAt,Qty Sold,Selling Price,Customers\n";
             fos.write(header.getBytes());
 
             // Rows
+            int sNo = 1;
             for (InventoryItem item : cachedItems) {
+                int qtySold = cachedQtySold.getOrDefault(item.getId(), 0);
+                String customers = cachedCustomers.getOrDefault(item.getId(), "N/A");
+                
                 String row = String.format(Locale.getDefault(),
-                        "\"%s\",\"%s\",\"%s\",%d,%.2f,%d,\"%s\",\"%s\"\n",
+                        "%d,\"%s\",\"%s\",\"%s\",%d,%.2f,%d,\"%s\",\"%s\",%d,%.2f,\"%s\"\n",
+                        sNo++,
                         item.getId() != null ? item.getId() : "",
                         item.getName(),
                         item.getCategory(),
@@ -238,7 +260,10 @@ public class Reports extends AppCompatActivity {
                         item.getPrice(),
                         item.getMinStock(),
                         item.getDescription() != null ? item.getDescription() : "",
-                        item.getCreatedAt() != null ? item.getCreatedAt() : ""
+                        item.getCreatedAt() != null ? item.getCreatedAt() : "",
+                        qtySold,
+                        item.getPrice(),
+                        customers
                 );
                 fos.write(row.getBytes());
             }
@@ -298,18 +323,26 @@ public class Reports extends AppCompatActivity {
 
         List<String[]> allRows = new ArrayList<>();
         // Build all rows first
+        int sNo = 1;
         for (InventoryItem item : cachedItems) {
+            int qtySold = cachedQtySold.getOrDefault(item.getId(), 0);
+            String customers = cachedCustomers.getOrDefault(item.getId(), "N/A");
+            
             allRows.add(new String[]{
+                    String.valueOf(sNo++),
                     item.getName(),
                     item.getCategory(),
                     String.valueOf(item.getQuantity()),
                     String.format(Locale.getDefault(), "\u20B9%.2f", item.getPrice()),
-                    String.valueOf(item.getMinStock())
+                    String.valueOf(item.getMinStock()),
+                    String.valueOf(qtySold),
+                    String.format(Locale.getDefault(), "\u20B9%.2f", item.getPrice()),
+                    customers
             });
         }
 
-        String[] colHeaders = {"Name", "Category", "Qty", "Price", "Min Stock"};
-        int[] colX = {marginLeft, 170, 290, 345, 430};
+        String[] colHeaders = {"S.No", "Name", "Category", "Qty", "Price", "Min Stock", "Sold", "S.Price", "Customers"};
+        int[] colX = {marginLeft, 60, 150, 240, 275, 325, 380, 420, 470};
 
         while (globalRow <= allRows.size()) {
 
