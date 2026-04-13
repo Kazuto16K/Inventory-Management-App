@@ -6,6 +6,7 @@ public class InventoryItem implements Serializable {
 
     private String id;
     private String name;
+    private String barcode;
     private String category;
     private int quantity;
     private double price;
@@ -16,6 +17,7 @@ public class InventoryItem implements Serializable {
     public InventoryItem() {}
 
     public InventoryItem(String name,
+                         String barcode,
                          String category,
                          int quantity,
                          double price,
@@ -24,6 +26,7 @@ public class InventoryItem implements Serializable {
                          String createdAt) {
 
         this.name = name;
+        this.barcode = barcode;
         this.category = category;
         this.quantity = quantity;
         this.price = price;
@@ -40,6 +43,8 @@ public class InventoryItem implements Serializable {
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
+    public String getBarcode() { return barcode; }
+    public void setBarcode(String barcode) { this.barcode = barcode; }
 
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }

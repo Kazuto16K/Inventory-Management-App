@@ -44,6 +44,14 @@ public class DatabaseHelper {
         void onCallback(List<String> categories);
     }
 
+    public interface SaleLogListCallback {
+        void onCallback(List<SaleLog> logs);
+    }
+
+    public interface ItemCallback {
+        void onCallback(InventoryItem item);
+    }
+
 
     // ================= USER METHODS =================
 
@@ -220,7 +228,8 @@ public class DatabaseHelper {
 
                         if (item != null &&
                                 (item.getName().toLowerCase().contains(query.toLowerCase())
-                                        || item.getCategory().toLowerCase().contains(query.toLowerCase()))) {
+                                        || item.getCategory().toLowerCase().contains(query.toLowerCase())
+                                        || (item.getBarcode() != null && item.getBarcode().contains(query)))) {
 
                             item.setId(doc.getId());
                             filtered.add(item);
@@ -231,6 +240,26 @@ public class DatabaseHelper {
                 })
                 .addOnFailureListener(e ->
                         callback.onCallback(new ArrayList<>()));
+    }
+
+    public void getItemByBarcode(String barcode, ItemCallback callback) {
+        db.collection("inventory")
+                .whereEqualTo("barcode", barcode)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    if (!snapshot.isEmpty()) {
+                        DocumentSnapshot doc = snapshot.getDocuments().get(0);
+                        InventoryItem item = doc.toObject(InventoryItem.class);
+                        if (item != null) {
+                            item.setId(doc.getId());
+                            callback.onCallback(item);
+                            return;
+                        }
+                    }
+                    callback.onCallback(null);
+                })
+                .addOnFailureListener(e -> callback.onCallback(null));
     }
 
 
@@ -437,6 +466,7 @@ public class DatabaseHelper {
     // ================= SALES METHODS =================
 
     public void insertSale(String itemId,
+                           String itemName,
                            int quantity,
                            double priceAtSale,   // Bug 2 fix: persist price so revenue = qty × price
                            String customer,
@@ -447,6 +477,7 @@ public class DatabaseHelper {
         Map<String,Object> sale = new HashMap<>();
 
         sale.put("item_id",       itemId);
+        sale.put("item_name",     itemName);
         sale.put("quantity",      quantity);
         sale.put("price_at_sale", priceAtSale);  // stored so getTotalRevenue can multiply
         sale.put("customer",      customer);
@@ -459,5 +490,22 @@ public class DatabaseHelper {
                         callback.onCallback(true))
                 .addOnFailureListener(e ->
                         callback.onCallback(false));
+    }
+
+    public void getSaleLogs(SaleLogListCallback callback) {
+        db.collection("sales")
+                .orderBy("timestamp")
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    List<SaleLog> logs = new ArrayList<>();
+                    for (DocumentSnapshot doc : snapshot) {
+                        SaleLog log = doc.toObject(SaleLog.class);
+                        if (log != null) {
+                            logs.add(log);
+                        }
+                    }
+                    callback.onCallback(logs);
+                })
+                .addOnFailureListener(e -> callback.onCallback(new ArrayList<>()));
     }
 }

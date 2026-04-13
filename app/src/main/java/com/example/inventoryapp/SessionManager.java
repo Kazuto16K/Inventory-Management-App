@@ -106,12 +106,7 @@ public class SessionManager {
         context.startActivity(intent);
     }
 
-    // ── Feature 3: Dark Mode helpers ──
 
-    /**
-     * Returns the saved AppCompatDelegate night mode integer.
-     * Default: -1 (MODE_NIGHT_FOLLOW_SYSTEM)
-     */
     public int getNightMode() {
         return prefs.getInt(KEY_NIGHT_MODE,
                 androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
@@ -121,4 +116,4 @@ public class SessionManager {
         editor.putInt(KEY_NIGHT_MODE, mode);
         editor.apply();
     }
-}
+}

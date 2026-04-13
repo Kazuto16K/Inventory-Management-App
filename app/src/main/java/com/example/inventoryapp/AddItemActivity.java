@@ -1,22 +1,23 @@
 package com.example.inventoryapp;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.textfield.TextInputLayout;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanIntentResult;
 import com.journeyapps.barcodescanner.ScanOptions;
@@ -29,11 +30,13 @@ public class AddItemActivity extends AppCompatActivity {
 
     private static final int CAMERA_PERMISSION_REQUEST = 101;
 
-    private EditText etItemName, etQuantity, etPrice, etDescription, etMinStock;
+    private EditText etBarcode, etItemName, etQuantity, etPrice, etDescription, etMinStock;
     private Spinner spinnerCategory;
     private Button btnSave, btnCancel;
-    private ImageButton btnScanBarcode;
+    private TextInputLayout tilBarcode;
     private DatabaseHelper dbHelper;
+    private String[] categories = {"Electronics", "Clothing", "Food & Beverage", "Furniture",
+            "Tools", "Stationery", "Medicine", "Sports", "Toys", "Other"};
 
     // ── Feature 1: ZXing barcode scanner launcher ──
     private final ActivityResultLauncher<ScanOptions> barcodeLauncher =
@@ -46,13 +49,7 @@ public class AddItemActivity extends AppCompatActivity {
 
         dbHelper = new DatabaseHelper(this);
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Add New Item");
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
-
+        etBarcode     = findViewById(R.id.etBarcode);
         etItemName    = findViewById(R.id.etItemName);
         etQuantity    = findViewById(R.id.etQuantity);
         etPrice       = findViewById(R.id.etPrice);
@@ -61,10 +58,8 @@ public class AddItemActivity extends AppCompatActivity {
         spinnerCategory = findViewById(R.id.spinnerCategory);
         btnSave       = findViewById(R.id.btnSave);
         btnCancel     = findViewById(R.id.btnCancel);
-        btnScanBarcode = findViewById(R.id.btnScanBarcode);
+        tilBarcode    = findViewById(R.id.tilBarcode);
 
-        String[] categories = {"Electronics", "Clothing", "Food & Beverage", "Furniture",
-                "Tools", "Stationery", "Medicine", "Sports", "Toys", "Other"};
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_spinner_item, categories);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -74,7 +69,37 @@ public class AddItemActivity extends AppCompatActivity {
         btnCancel.setOnClickListener(v -> finish());
 
         // ── Feature 1: Launch scanner when scan button tapped ──
-        btnScanBarcode.setOnClickListener(v -> launchScanner());
+        tilBarcode.setEndIconOnClickListener(v -> launchScanner());
+
+        setupBottomNavigation();
+    }
+
+    private void setupBottomNavigation() {
+        BottomNavigationView bottomNavigation = findViewById(R.id.bottomNavigation);
+        bottomNavigation.setSelectedItemId(R.id.nav_add);
+        bottomNavigation.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.nav_add) {
+                return true;
+            } else if (id == R.id.nav_home) {
+                startActivity(new Intent(this, DashboardActivity.class));
+                finish();
+                return true;
+            } else if (id == R.id.nav_sell) {
+                startActivity(new Intent(this, SellStockActivity.class));
+                finish();
+                return true;
+            } else if (id == R.id.nav_reports) {
+                startActivity(new Intent(this, Reports.class));
+                finish();
+                return true;
+            } else if (id == R.id.nav_settings) {
+                startActivity(new Intent(this, SettingsActivity.class));
+                finish();
+                return true;
+            }
+            return false;
+        });
     }
 
     // ── Feature 1: Request camera permission then launch ZXing ──
@@ -98,16 +123,42 @@ public class AddItemActivity extends AppCompatActivity {
         barcodeLauncher.launch(options);
     }
 
-    // ── Feature 1: Handle scan result — auto-fill item name ──
+    // ── Feature 1: Handle scan result ──
     private void onScanResult(ScanIntentResult result) {
         if (result.getContents() != null) {
-            etItemName.setText(result.getContents());
-            etItemName.requestFocus();
-            Toast.makeText(this, "Barcode scanned: " + result.getContents(),
+            String scannedBarcode = result.getContents();
+            etBarcode.setText(scannedBarcode);
+            autoFillProductDetails(scannedBarcode);
+            Toast.makeText(this, "Barcode scanned: " + scannedBarcode,
                     Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(this, "Scan cancelled", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void autoFillProductDetails(String barcode) {
+        dbHelper.getItemByBarcode(barcode, item -> {
+            if (item != null) {
+                etItemName.setText(item.getName());
+                etPrice.setText(String.valueOf(item.getPrice()));
+                
+                // Set category spinner
+                if (item.getCategory() != null) {
+                    for (int i = 0; i < categories.length; i++) {
+                        if (categories[i].equals(item.getCategory())) {
+                            spinnerCategory.setSelection(i);
+                            break;
+                        }
+                    }
+                }
+                
+                if (item.getDescription() != null) {
+                    etDescription.setText(item.getDescription());
+                }
+                
+                Toast.makeText(this, "Product details auto-filled!", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @Override
@@ -128,6 +179,7 @@ public class AddItemActivity extends AppCompatActivity {
     }
 
     private void saveItem() {
+        String barcode     = etBarcode.getText().toString().trim();
         String name        = etItemName.getText().toString().trim();
         String quantityStr = etQuantity.getText().toString().trim();
         String priceStr    = etPrice.getText().toString().trim();
@@ -159,7 +211,7 @@ public class AddItemActivity extends AppCompatActivity {
                 .format(new Date());
 
         InventoryItem item = new InventoryItem(
-                name, category, quantity, price,
+                name, barcode, category, quantity, price,
                 description, minStock, createdAt
         );
 
@@ -172,11 +224,5 @@ public class AddItemActivity extends AppCompatActivity {
                 Toast.makeText(this, "Failed to add item", Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-    @Override
-    public boolean onSupportNavigateUp() {
-        finish();
-        return true;
     }
 }

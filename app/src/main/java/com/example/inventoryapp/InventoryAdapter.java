@@ -98,4 +98,6 @@ public class InventoryAdapter extends RecyclerView.Adapter<InventoryAdapter.View
             btnDelete = itemView.findViewById(R.id.btnDelete);
         }
     }
+
+
 }

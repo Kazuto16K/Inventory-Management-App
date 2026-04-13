@@ -1,11 +1,15 @@
 package com.example.inventoryapp;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.View;
 import android.widget.*;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -32,7 +36,6 @@ public class SellStockActivity extends AppCompatActivity {
         dbHelper = new DatabaseHelper(this);
         sessionManager = new SessionManager(this);
 
-        spinnerCategory = findViewById(R.id.spinnerCategory);
         spinnerCategory = findViewById(R.id.spinnerCategory);
         spinnerItems = findViewById(R.id.spinnerItems);
         etQuantity = findViewById(R.id.etSellQuantity);
@@ -62,6 +65,36 @@ public class SellStockActivity extends AppCompatActivity {
                 });
 
         btnSell.setOnClickListener(v -> sellItem());
+        
+        setupBottomNavigation();
+    }
+
+    private void setupBottomNavigation() {
+        BottomNavigationView bottomNavigation = findViewById(R.id.bottomNavigation);
+        bottomNavigation.setSelectedItemId(R.id.nav_sell);
+        bottomNavigation.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.nav_home) {
+                startActivity(new Intent(this, DashboardActivity.class));
+                finish();
+                return true;
+            } else if (id == R.id.nav_sell) {
+                return true;
+            } else if (id == R.id.nav_reports) {
+                startActivity(new Intent(this, Reports.class));
+                finish();
+                return true;
+            } else if (id == R.id.nav_add) {
+                startActivity(new Intent(this, AddItemActivity.class));
+                finish();
+                return true;
+            } else if (id == R.id.nav_settings) {
+                startActivity(new Intent(this, SettingsActivity.class));
+                finish();
+                return true;
+            }
+            return false;
+        });
     }
 
     private void loadCategories() {
@@ -111,10 +144,12 @@ public class SellStockActivity extends AppCompatActivity {
         int qty =
                 Integer.parseInt(qtyStr);
 
-        InventoryItem selected =
-                filteredItems.get(
-                        spinnerItems.getSelectedItemPosition()
-                );
+        int selectedPos = spinnerItems.getSelectedItemPosition();
+        if (selectedPos < 0 || filteredItems == null || filteredItems.isEmpty()) {
+            return;
+        }
+
+        InventoryItem selected = filteredItems.get(selectedPos);
 
         if (qty > selected.getQuantity()) {
 
@@ -152,6 +187,7 @@ public class SellStockActivity extends AppCompatActivity {
 
             dbHelper.insertSale(
                     selected.getId(),
+                    selected.getName(),
                     qty,
                     selected.getPrice(),          // Bug 2 fix: capture price at time of sale
                     etCustomer.getText().toString(),
