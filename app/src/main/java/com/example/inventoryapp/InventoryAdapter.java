@@ -6,7 +6,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
+import com.bumptech.glide.Glide;
 
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
@@ -48,6 +50,15 @@ public class InventoryAdapter extends RecyclerView.Adapter<InventoryAdapter.View
         holder.tvPrice.setText(String.format("₹%.2f", item.getPrice()));
         holder.tvDescription.setText(item.getDescription() != null ? item.getDescription() : "No description");
 
+        if (item.getImageUrl() != null && !item.getImageUrl().isEmpty()) {
+            Glide.with(context)
+                 .load(item.getImageUrl())
+                 .placeholder(android.R.drawable.ic_menu_gallery)
+                 .into(holder.ivItemImage);
+        } else {
+            holder.ivItemImage.setImageResource(android.R.drawable.ic_menu_gallery);
+        }
+
         // Stock status color coding
         if (item.isOutOfStock()) {
             holder.tvStatus.setText("OUT OF STOCK");
@@ -84,10 +95,12 @@ public class InventoryAdapter extends RecyclerView.Adapter<InventoryAdapter.View
         CardView cardView;
         TextView tvItemName, tvCategory, tvQuantity, tvPrice, tvDescription, tvStatus;
         ImageButton btnEdit, btnDelete;
+        ImageView ivItemImage;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             cardView = itemView.findViewById(R.id.cardView);
+            ivItemImage = itemView.findViewById(R.id.ivItemImage);
             tvItemName = itemView.findViewById(R.id.tvItemName);
             tvCategory = itemView.findViewById(R.id.tvCategory);
             tvQuantity = itemView.findViewById(R.id.tvQuantity);

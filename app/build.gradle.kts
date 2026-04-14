@@ -55,4 +55,8 @@ dependencies {
 
     // Feature 2: Export — PDF uses built-in android.graphics.pdf.PdfDocument (no extra dep)
     // CSV uses standard Java I/O (no extra dep)
+
+    // Image Upload and Display Feature
+    implementation("com.google.firebase:firebase-storage")
+    implementation("com.github.bumptech.glide:glide:4.16.0")
 }

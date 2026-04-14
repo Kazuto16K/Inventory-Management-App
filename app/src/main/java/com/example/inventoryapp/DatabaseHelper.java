@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,6 +43,10 @@ public class DatabaseHelper {
 
     public interface CategoryListCallback {
         void onCallback(List<String> categories);
+    }
+
+    public interface TransactionListCallback {
+        void onCallback(List<InventoryTransaction> transactions);
     }
 
 
@@ -407,26 +412,14 @@ public class DatabaseHelper {
         db.collection("sales")
                 .get()
                 .addOnSuccessListener(snapshot -> {
-
-                    if (snapshot.isEmpty()) {
-                        callback.onCallback(0.0);
-                        return;
-                    }
-
                     double total = 0;
-
                     for (DocumentSnapshot doc : snapshot) {
-
-                        Long qty   = doc.getLong("quantity");
-                        // price_at_sale was added in the fixed insertSale().
-                        // For older records that lack it, fall back to 0.
+                        Long qty = doc.getLong("quantity");
                         Double price = doc.getDouble("price_at_sale");
-
                         if (qty != null && price != null) {
-                            total += qty * price;   // correct: revenue = qty × price
+                            total += (qty * price);
                         }
                     }
-
                     callback.onCallback(total);
                 })
                 .addOnFailureListener(e ->
@@ -434,24 +427,50 @@ public class DatabaseHelper {
     }
 
 
-    // ================= SALES METHODS =================
+    // ================= TRANSACTION & AUDIT METHODS =================
+
+    public void addTransaction(InventoryTransaction transaction, BooleanCallback callback) {
+        db.collection("transactions")
+                .add(transaction)
+                .addOnSuccessListener(a -> callback.onCallback(true))
+                .addOnFailureListener(e -> callback.onCallback(false));
+    }
+
+    public void getAllTransactions(TransactionListCallback callback) {
+        db.collection("transactions")
+                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    List<InventoryTransaction> transactions = new ArrayList<>();
+                    for (DocumentSnapshot doc : snapshot) {
+                        InventoryTransaction t = doc.toObject(InventoryTransaction.class);
+                        if (t != null) {
+                            t.setId(doc.getId());
+                            transactions.add(t);
+                        }
+                    }
+                    callback.onCallback(transactions);
+                })
+                .addOnFailureListener(e -> callback.onCallback(new ArrayList<>()));
+    }
 
     public void insertSale(String itemId,
                            int quantity,
-                           double priceAtSale,   // Bug 2 fix: persist price so revenue = qty × price
+                           double priceAtSale,
                            String customer,
                            String soldBy,
                            String timestamp,
                            BooleanCallback callback) {
 
-        Map<String,Object> sale = new HashMap<>();
+        Map<String,Object> sale =
+                new HashMap<>();
 
-        sale.put("item_id",       itemId);
-        sale.put("quantity",      quantity);
-        sale.put("price_at_sale", priceAtSale);  // stored so getTotalRevenue can multiply
-        sale.put("customer",      customer);
-        sale.put("sold_by",       soldBy);
-        sale.put("timestamp",     timestamp);
+        sale.put("item_id", itemId);
+        sale.put("quantity", quantity);
+        sale.put("price_at_sale", priceAtSale);
+        sale.put("customer", customer);
+        sale.put("sold_by", soldBy);
+        sale.put("timestamp", timestamp);
 
         db.collection("sales")
                 .add(sale)

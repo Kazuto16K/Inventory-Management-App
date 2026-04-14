@@ -12,6 +12,7 @@ public class InventoryItem implements Serializable {
     private String description;
     private int minStock;
     private String createdAt;
+    private String imageUrl;
 
     public InventoryItem() {}
 
@@ -21,7 +22,8 @@ public class InventoryItem implements Serializable {
                          double price,
                          String description,
                          int minStock,
-                         String createdAt) {
+                         String createdAt,
+                         String imageUrl) {
 
         this.name = name;
         this.category = category;
@@ -30,6 +32,7 @@ public class InventoryItem implements Serializable {
         this.description = description;
         this.minStock = minStock;
         this.createdAt = createdAt;
+        this.imageUrl = imageUrl;
     }
 
 
@@ -69,6 +72,8 @@ public class InventoryItem implements Serializable {
         return quantity <= minStock && quantity > 0;
     }
 
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
     public boolean isOutOfStock() {
         return quantity == 0;

@@ -1,23 +1,60 @@
 package com.example.inventoryapp;
 
+import android.Manifest;
+import android.app.AlertDialog;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
+
+import com.bumptech.glide.Glide;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+
+import java.io.File;
 
 public class EditItemActivity extends AppCompatActivity {
 
+    private static final int CAMERA_PERMISSION_REQUEST = 101;
+
     private EditText etItemName, etQuantity, etPrice, etDescription, etMinStock;
     private Spinner spinnerCategory;
-    private Button btnUpdate, btnCancel;
+    private Button btnUpdate, btnCancel, btnChangeImage;
+    private ImageView ivProductImage;
     private DatabaseHelper dbHelper;
     private InventoryItem currentItem;
+    private Uri imageUri = null;
+    private Uri cameraUri = null;
+
+    private final ActivityResultLauncher<String> galleryLauncher =
+            registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
+                if (uri != null) {
+                    imageUri = uri;
+                    Glide.with(this).load(imageUri).into(ivProductImage);
+                }
+            });
+
+    private final ActivityResultLauncher<Uri> cameraLauncher =
+            registerForActivityResult(new ActivityResultContracts.TakePicture(), success -> {
+                if (success && cameraUri != null) {
+                    imageUri = cameraUri;
+                    Glide.with(this).load(imageUri).into(ivProductImage);
+                }
+            });
 
     private final String[] categories = {"Electronics", "Clothing", "Food & Beverage", "Furniture",
             "Tools", "Stationery", "Medicine", "Sports", "Toys", "Other"};
@@ -50,6 +87,8 @@ public class EditItemActivity extends AppCompatActivity {
         spinnerCategory = findViewById(R.id.spinnerCategory);
         btnUpdate = findViewById(R.id.btnSave);
         btnCancel = findViewById(R.id.btnCancel);
+        btnChangeImage = findViewById(R.id.btnChangeImage);
+        ivProductImage = findViewById(R.id.ivProductImage);
 
         btnUpdate.setText("Update Item");
 
@@ -75,8 +114,59 @@ public class EditItemActivity extends AppCompatActivity {
             }
         }
 
+        if (currentItem.getImageUrl() != null && !currentItem.getImageUrl().isEmpty()) {
+            Glide.with(this).load(currentItem.getImageUrl()).into(ivProductImage);
+        }
+
+        btnChangeImage.setOnClickListener(v -> showImagePickerDialog());
         btnUpdate.setOnClickListener(v -> updateItem());
         btnCancel.setOnClickListener(v -> finish());
+    }
+
+    private void showImagePickerDialog() {
+        String[] options = {"Take Photo", "Choose from Gallery"};
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Select Image");
+        builder.setItems(options, (dialog, which) -> {
+            if (which == 0) {
+                // Camera
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this,
+                            new String[]{Manifest.permission.CAMERA},
+                            CAMERA_PERMISSION_REQUEST);
+                } else {
+                    launchCamera();
+                }
+            } else if (which == 1) {
+                // Gallery
+                galleryLauncher.launch("image/*");
+            }
+        });
+        builder.show();
+    }
+
+    private void launchCamera() {
+        File photoFile = new File(getCacheDir(), "camera_image_" + System.currentTimeMillis() + ".jpg");
+        cameraUri = FileProvider.getUriForFile(this, getApplicationContext().getPackageName() + ".fileprovider", photoFile);
+        cameraLauncher.launch(cameraUri);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String[] permissions,
+                                           int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == CAMERA_PERMISSION_REQUEST) {
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                launchCamera();
+            } else {
+                Toast.makeText(this,
+                        "Camera permission is required to take photos",
+                        Toast.LENGTH_LONG).show();
+            }
+        }
     }
 
     private void updateItem() {
@@ -112,19 +202,43 @@ public class EditItemActivity extends AppCompatActivity {
         currentItem.setDescription(description);
         currentItem.setMinStock(TextUtils.isEmpty(minStockStr) ? 5 : Integer.parseInt(minStockStr));
 
+        if (imageUri != null) {
+            uploadImageAndUpdate();
+        } else {
+            saveToDatabase();
+        }
+    }
+
+    private void uploadImageAndUpdate() {
+        btnUpdate.setEnabled(false);
+        Toast.makeText(this, "Uploading new image...", Toast.LENGTH_SHORT).show();
+
+        StorageReference storageRef = FirebaseStorage.getInstance().getReference()
+                .child("inventory_images/" + System.currentTimeMillis() + ".jpg");
+
+        storageRef.putFile(imageUri)
+                .addOnSuccessListener(taskSnapshot -> {
+                    storageRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                        currentItem.setImageUrl(uri.toString());
+                        saveToDatabase();
+                    });
+                })
+                .addOnFailureListener(e -> {
+                    btnUpdate.setEnabled(true);
+                    Toast.makeText(this, "Image upload failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private void saveToDatabase() {
         dbHelper.updateItem(currentItem, success -> {
-
+            btnUpdate.setEnabled(true);
             if (success) {
-
                 Toast.makeText(this,
                         "Item updated successfully!",
                         Toast.LENGTH_SHORT).show();
-
                 setResult(RESULT_OK);
                 finish();
-
             } else {
-
                 Toast.makeText(this,
                         "Failed to update item",
                         Toast.LENGTH_SHORT).show();
