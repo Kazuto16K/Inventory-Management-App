@@ -45,8 +45,17 @@ public class DatabaseHelper {
         void onCallback(List<String> categories);
     }
 
+<<<<<<< HEAD
     public interface TransactionListCallback {
         void onCallback(List<InventoryTransaction> transactions);
+=======
+    public interface SaleLogListCallback {
+        void onCallback(List<SaleLog> logs);
+    }
+
+    public interface ItemCallback {
+        void onCallback(InventoryItem item);
+>>>>>>> 484d8b78888c3971ddd600b793d63e7ac4af9043
     }
 
 
@@ -225,7 +234,8 @@ public class DatabaseHelper {
 
                         if (item != null &&
                                 (item.getName().toLowerCase().contains(query.toLowerCase())
-                                        || item.getCategory().toLowerCase().contains(query.toLowerCase()))) {
+                                        || item.getCategory().toLowerCase().contains(query.toLowerCase())
+                                        || (item.getBarcode() != null && item.getBarcode().contains(query)))) {
 
                             item.setId(doc.getId());
                             filtered.add(item);
@@ -236,6 +246,26 @@ public class DatabaseHelper {
                 })
                 .addOnFailureListener(e ->
                         callback.onCallback(new ArrayList<>()));
+    }
+
+    public void getItemByBarcode(String barcode, ItemCallback callback) {
+        db.collection("inventory")
+                .whereEqualTo("barcode", barcode)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    if (!snapshot.isEmpty()) {
+                        DocumentSnapshot doc = snapshot.getDocuments().get(0);
+                        InventoryItem item = doc.toObject(InventoryItem.class);
+                        if (item != null) {
+                            item.setId(doc.getId());
+                            callback.onCallback(item);
+                            return;
+                        }
+                    }
+                    callback.onCallback(null);
+                })
+                .addOnFailureListener(e -> callback.onCallback(null));
     }
 
 
@@ -455,6 +485,7 @@ public class DatabaseHelper {
     }
 
     public void insertSale(String itemId,
+                           String itemName,
                            int quantity,
                            double priceAtSale,
                            String customer,
@@ -465,12 +496,22 @@ public class DatabaseHelper {
         Map<String,Object> sale =
                 new HashMap<>();
 
+<<<<<<< HEAD
         sale.put("item_id", itemId);
         sale.put("quantity", quantity);
         sale.put("price_at_sale", priceAtSale);
         sale.put("customer", customer);
         sale.put("sold_by", soldBy);
         sale.put("timestamp", timestamp);
+=======
+        sale.put("item_id",       itemId);
+        sale.put("item_name",     itemName);
+        sale.put("quantity",      quantity);
+        sale.put("price_at_sale", priceAtSale);  // stored so getTotalRevenue can multiply
+        sale.put("customer",      customer);
+        sale.put("sold_by",       soldBy);
+        sale.put("timestamp",     timestamp);
+>>>>>>> 484d8b78888c3971ddd600b793d63e7ac4af9043
 
         db.collection("sales")
                 .add(sale)
@@ -479,4 +520,25 @@ public class DatabaseHelper {
                 .addOnFailureListener(e ->
                         callback.onCallback(false));
     }
+<<<<<<< HEAD
 }
+=======
+
+    public void getSaleLogs(SaleLogListCallback callback) {
+        db.collection("sales")
+                .orderBy("timestamp")
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    List<SaleLog> logs = new ArrayList<>();
+                    for (DocumentSnapshot doc : snapshot) {
+                        SaleLog log = doc.toObject(SaleLog.class);
+                        if (log != null) {
+                            logs.add(log);
+                        }
+                    }
+                    callback.onCallback(logs);
+                })
+                .addOnFailureListener(e -> callback.onCallback(new ArrayList<>()));
+    }
+}
+>>>>>>> 484d8b78888c3971ddd600b793d63e7ac4af9043

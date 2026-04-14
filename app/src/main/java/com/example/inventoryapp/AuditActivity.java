@@ -1,7 +1,7 @@
 package com.example.inventoryapp;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.os.Environment;
 import android.widget.Button;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -9,6 +9,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -40,8 +42,40 @@ public class AuditActivity extends AppCompatActivity {
         exportBtn.setOnClickListener(
                 v -> exportExcel()
         );
+
+        setupBottomNavigation();
     }
 
+    private void setupBottomNavigation() {
+        BottomNavigationView bottomNavigation = findViewById(R.id.bottomNavigation);
+        // Audit isn't in the menu, but we can keep the nav visible. 
+        // Maybe it should be under Reports?
+        bottomNavigation.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.nav_reports) {
+                startActivity(new Intent(this, Reports.class));
+                finish();
+                return true;
+            } else if (id == R.id.nav_sell) {
+                startActivity(new Intent(this, SellStockActivity.class));
+                finish();
+                return true;
+            } else if (id == R.id.nav_add) {
+                startActivity(new Intent(this, AddItemActivity.class));
+                finish();
+                return true;
+            } else if (id == R.id.nav_settings) {
+                startActivity(new Intent(this, SettingsActivity.class));
+                finish();
+                return true;
+            } else if (id == R.id.nav_home) {
+                startActivity(new Intent(this, DashboardActivity.class));
+                finish();
+                return true;
+            }
+            return false;
+        });
+    }
 
     private void loadAuditData() {
 
@@ -53,13 +87,6 @@ public class AuditActivity extends AppCompatActivity {
 
                 totalRevenue = revenue;
 
-                // Bug 3 fix:
-                // profitLoss = Revenue - Cost of current inventory stock is WRONG.
-                // Gross Profit here = Total Revenue (money collected from sales).
-                // We don't have COGS separately stored, so we show what we know correctly:
-                //   Row 1 — current inventory value (stock on hand)
-                //   Row 2 — total revenue earned from all sales
-                //   Row 3 — difference: how much revenue exceeds remaining inventory value
                 profitLoss = totalRevenue - totalStockValue;
 
                 addRow("Current Inventory Value",  totalStockValue);

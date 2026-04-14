@@ -1,9 +1,13 @@
 package com.example.inventoryapp;
 
+<<<<<<< HEAD
 import android.Manifest;
 import android.app.AlertDialog;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+=======
+import android.content.Intent;
+>>>>>>> 484d8b78888c3971ddd600b793d63e7ac4af9043
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.ArrayAdapter;
@@ -26,6 +30,8 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.io.File;
+
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class EditItemActivity extends AppCompatActivity {
 
@@ -121,6 +127,37 @@ public class EditItemActivity extends AppCompatActivity {
         btnChangeImage.setOnClickListener(v -> showImagePickerDialog());
         btnUpdate.setOnClickListener(v -> updateItem());
         btnCancel.setOnClickListener(v -> finish());
+
+        setupBottomNavigation();
+    }
+
+    private void setupBottomNavigation() {
+        BottomNavigationView bottomNavigation = findViewById(R.id.bottomNavigation);
+        bottomNavigation.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.nav_reports) {
+                startActivity(new Intent(this, Reports.class));
+                finish();
+                return true;
+            } else if (id == R.id.nav_sell) {
+                startActivity(new Intent(this, SellStockActivity.class));
+                finish();
+                return true;
+            } else if (id == R.id.nav_add) {
+                startActivity(new Intent(this, AddItemActivity.class));
+                finish();
+                return true;
+            } else if (id == R.id.nav_settings) {
+                startActivity(new Intent(this, SettingsActivity.class));
+                finish();
+                return true;
+            } else if (id == R.id.nav_home) {
+                startActivity(new Intent(this, DashboardActivity.class));
+                finish();
+                return true;
+            }
+            return false;
+        });
     }
 
     private void showImagePickerDialog() {

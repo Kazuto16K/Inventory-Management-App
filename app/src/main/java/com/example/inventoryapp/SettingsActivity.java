@@ -1,22 +1,24 @@
 package com.example.inventoryapp;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 
-/**
- * Feature 3 — Dark Mode Settings
- * Lets the user choose Light / Dark / System Default.
- * Preference is persisted via SessionManager and applied immediately.
- */
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+
 public class SettingsActivity extends AppCompatActivity {
 
     private RadioGroup radioGroupTheme;
     private RadioButton radioLight, radioDark, radioSystem;
+    private TextView tvProfileName, tvProfileEmail, tvProfileRole;
+    private Button btnLogout;
     private SessionManager sessionManager;
 
     @Override
@@ -28,14 +30,28 @@ public class SettingsActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle("Settings");
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
         sessionManager   = new SessionManager(this);
+        
+        // Profile views
+        tvProfileName    = findViewById(R.id.tvProfileName);
+        tvProfileEmail   = findViewById(R.id.tvProfileEmail);
+        tvProfileRole    = findViewById(R.id.tvProfileRole);
+        btnLogout        = findViewById(R.id.btnLogout);
+
+        // Appearance views
         radioGroupTheme  = findViewById(R.id.radioGroupTheme);
         radioLight       = findViewById(R.id.radioLight);
         radioDark        = findViewById(R.id.radioDark);
         radioSystem      = findViewById(R.id.radioSystem);
+
+        // Populate Profile Data
+        tvProfileName.setText("Name: " + sessionManager.getUsername());
+        tvProfileEmail.setText("Email: " + sessionManager.getEmail());
+        tvProfileRole.setText("Role: " + sessionManager.getRole());
+
+        btnLogout.setOnClickListener(v -> sessionManager.logout());
 
         // Load saved preference and check the matching radio
         int savedMode = sessionManager.getNightMode();
@@ -59,15 +75,38 @@ public class SettingsActivity extends AppCompatActivity {
             }
             sessionManager.setNightMode(mode);
             AppCompatDelegate.setDefaultNightMode(mode);
-            // recreate() is called automatically by AppCompatDelegate when mode changes,
-            // but we also call it here to be safe.
+            // Recreate activity to apply theme
             recreate();
         });
+
+        setupBottomNavigation();
     }
 
-    @Override
-    public boolean onSupportNavigateUp() {
-        finish();
-        return true;
+    private void setupBottomNavigation() {
+        BottomNavigationView bottomNavigation = findViewById(R.id.bottomNavigation);
+        bottomNavigation.setSelectedItemId(R.id.nav_settings);
+        bottomNavigation.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.nav_settings) {
+                return true;
+            } else if (id == R.id.nav_home) {
+                startActivity(new Intent(this, DashboardActivity.class));
+                finish();
+                return true;
+            } else if (id == R.id.nav_reports) {
+                startActivity(new Intent(this, Reports.class));
+                finish();
+                return true;
+            } else if (id == R.id.nav_sell) {
+                startActivity(new Intent(this, SellStockActivity.class));
+                finish();
+                return true;
+            } else if (id == R.id.nav_add) {
+                startActivity(new Intent(this, AddItemActivity.class));
+                finish();
+                return true;
+            }
+            return false;
+        });
     }
 }
