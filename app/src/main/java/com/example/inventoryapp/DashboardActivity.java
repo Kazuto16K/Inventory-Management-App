@@ -28,8 +28,7 @@ import com.journeyapps.barcodescanner.ScanOptions;
 
 import java.util.List;
 
-public class DashboardActivity extends AppCompatActivity
-        implements InventoryAdapter.OnItemActionListener, CategoryAdapter.OnCategoryClickListener {
+public class DashboardActivity extends AppCompatActivity implements InventoryAdapter.OnItemActionListener, CategoryAdapter.OnCategoryClickListener {
 
     private static final int CAMERA_PERMISSION_REQUEST = 102;
 
@@ -47,6 +46,8 @@ public class DashboardActivity extends AppCompatActivity
     private SessionManager sessionManager;
 
     private List<InventoryItem> itemList;
+    private List<InventoryItem> originalList;
+private boolean isSortedByCategory = false;
 
     private boolean isAdmin = false;
 
@@ -93,15 +94,18 @@ public class DashboardActivity extends AppCompatActivity
 
         btnScanSearch.setOnClickListener(v -> launchScanSearch());
 
-        toggleGroupFilter.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
-            if (isChecked) {
-                if (checkedId == R.id.btnAllItems) {
-                    showAllItems();
-                } else if (checkedId == R.id.btnCategories) {
-                    showCategories();
-                }
-            }
-        });
+       toggleGroupFilter.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+
+    if (checkedId == R.id.btnAllItems && isChecked) {
+        showAllItems();
+
+    } else if (checkedId == R.id.btnCategories && isChecked) {
+        showCategories();
+
+    } else if (checkedId == R.id.btnSortCategory) {
+        toggleSortByCategory(isChecked);
+    }
+});
 
         setupBottomNavigation();
         loadData();
@@ -201,17 +205,22 @@ public class DashboardActivity extends AppCompatActivity
     }
 
     private void loadData() {
-        dbHelper.getAllItems(items -> {
-            itemList = items;
-            adapter = new InventoryAdapter(
-                    DashboardActivity.this,
-                    itemList,
-                    DashboardActivity.this
-            );
-            recyclerView.setAdapter(adapter);
-            updateStats();
-        });
-    }
+    dbHelper.getAllItems(items -> {
+        itemList = items;
+
+        // ⭐ Save original list
+        originalList = new java.util.ArrayList<>(items);
+
+        adapter = new InventoryAdapter(
+                DashboardActivity.this,
+                itemList,
+                DashboardActivity.this
+        );
+        recyclerView.setAdapter(adapter);
+        updateStats();
+    });
+}
+
 
     private void updateStats() {
         dbHelper.getTotalItems(value ->
@@ -231,6 +240,7 @@ public class DashboardActivity extends AppCompatActivity
             dbHelper.getAllItems(items -> {
                 if (adapter != null) {
                     adapter.updateList(items);
+                    originalList = new java.util.ArrayList<>(items);
                     if (recyclerView.getAdapter() != adapter) {
                         recyclerView.setAdapter(adapter);
                     }
@@ -240,6 +250,7 @@ public class DashboardActivity extends AppCompatActivity
             dbHelper.searchItems(query, items -> {
                 if (adapter != null) {
                     adapter.updateList(items);
+                    originalList = new java.util.ArrayList<>(items);
                     if (recyclerView.getAdapter() != adapter) {
                         recyclerView.setAdapter(adapter);
                     }
@@ -285,6 +296,32 @@ public class DashboardActivity extends AppCompatActivity
             loadData();
         }
     }
+    private void toggleSortByCategory(boolean isChecked) {
+
+    if (itemList == null || adapter == null) return;
+
+    if (isChecked) {
+        // SORT
+        java.util.Collections.sort(itemList, (a, b) ->
+               Double.compare(a.getPrice(), b.getPrice())
+        );
+
+        adapter.updateList(itemList);
+        isSortedByCategory = true;
+
+        Toast.makeText(this, "Sorted by price", Toast.LENGTH_SHORT).show();
+
+    } else {
+        // RESET
+        itemList.clear();
+        itemList.addAll(originalList);
+
+        adapter.updateList(itemList);
+        isSortedByCategory = false;
+
+        Toast.makeText(this, "Original Order Restored", Toast.LENGTH_SHORT).show();
+    }
+}
 
 }
 
