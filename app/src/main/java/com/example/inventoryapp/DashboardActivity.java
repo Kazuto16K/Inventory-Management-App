@@ -76,6 +76,9 @@ private boolean isSortedByCategory = false;
         recyclerView  = findViewById(R.id.recyclerView);
         btnScanSearch = findViewById(R.id.btnScanSearch);
         toggleGroupFilter = findViewById(R.id.toggleGroupFilter);
+        findViewById(R.id.btnSortPrice).setOnClickListener(v -> {
+            toggleSortByPrice();
+        });
 
         tvWelcome.setText(getString(R.string.welcome_user, sessionManager.getUsername()));
 
@@ -94,16 +97,13 @@ private boolean isSortedByCategory = false;
 
         btnScanSearch.setOnClickListener(v -> launchScanSearch());
 
-       toggleGroupFilter.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
-
-    if (checkedId == R.id.btnAllItems && isChecked) {
-        showAllItems();
-
-    } else if (checkedId == R.id.btnCategories && isChecked) {
-        showCategories();
-
-    } else if (checkedId == R.id.btnSortCategory) {
-        toggleSortByCategory(isChecked);
+        toggleGroupFilter.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+    if (isChecked) {
+        if (checkedId == R.id.btnAllItems) {
+            showAllItems();
+        } else if (checkedId == R.id.btnCategories) {
+            showCategories();
+        }
     }
 });
 
@@ -296,31 +296,34 @@ private boolean isSortedByCategory = false;
             loadData();
         }
     }
-    private void toggleSortByCategory(boolean isChecked) {
+    private boolean isSorted = false;
+private List<InventoryItem> originalList;
+
+
+
+private void toggleSortByPrice() {
 
     if (itemList == null || adapter == null) return;
 
-    if (isChecked) {
-        // SORT
+    if (!isSorted) {
+        originalList = new java.util.ArrayList<>(itemList);
+
         java.util.Collections.sort(itemList, (a, b) ->
-               Double.compare(a.getPrice(), b.getPrice())
+                Double.compare(a.getPrice(), b.getPrice())
         );
 
-        adapter.updateList(itemList);
-        isSortedByCategory = true;
-
-        Toast.makeText(this, "Sorted by price", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Sorted by Price", Toast.LENGTH_SHORT).show();
+        isSorted = true;
 
     } else {
-        // RESET
         itemList.clear();
         itemList.addAll(originalList);
 
-        adapter.updateList(itemList);
-        isSortedByCategory = false;
-
         Toast.makeText(this, "Original Order Restored", Toast.LENGTH_SHORT).show();
+        isSorted = false;
     }
+
+    adapter.updateList(itemList);
 }
 
 }
