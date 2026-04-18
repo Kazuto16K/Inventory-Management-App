@@ -7,8 +7,11 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,9 +29,12 @@ import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanIntentResult;
 import com.journeyapps.barcodescanner.ScanOptions;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-public class DashboardActivity extends AppCompatActivity implements InventoryAdapter.OnItemActionListener, CategoryAdapter.OnCategoryClickListener {
+public class DashboardActivity extends AppCompatActivity
+        implements InventoryAdapter.OnItemActionListener, CategoryAdapter.OnCategoryClickListener {
 
     private static final int CAMERA_PERMISSION_REQUEST = 102;
 
@@ -47,7 +53,6 @@ public class DashboardActivity extends AppCompatActivity implements InventoryAda
 
     private List<InventoryItem> itemList;
     private List<InventoryItem> originalList;
-private boolean isSortedByCategory = false;
 
     private boolean isAdmin = false;
 
@@ -76,9 +81,8 @@ private boolean isSortedByCategory = false;
         recyclerView  = findViewById(R.id.recyclerView);
         btnScanSearch = findViewById(R.id.btnScanSearch);
         toggleGroupFilter = findViewById(R.id.toggleGroupFilter);
-        findViewById(R.id.btnSortPrice).setOnClickListener(v -> {
-            toggleSortByPrice();
-        });
+
+        findViewById(R.id.btnSortOptions).setOnClickListener(this::showSortMenu);
 
         tvWelcome.setText(getString(R.string.welcome_user, sessionManager.getUsername()));
 
@@ -98,17 +102,56 @@ private boolean isSortedByCategory = false;
         btnScanSearch.setOnClickListener(v -> launchScanSearch());
 
         toggleGroupFilter.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
-    if (isChecked) {
-        if (checkedId == R.id.btnAllItems) {
-            showAllItems();
-        } else if (checkedId == R.id.btnCategories) {
-            showCategories();
-        }
-    }
-});
+            if (isChecked) {
+                if (checkedId == R.id.btnAllItems) {
+                    showAllItems();
+                } else if (checkedId == R.id.btnCategories) {
+                    showCategories();
+                }
+            }
+        });
 
         setupBottomNavigation();
         loadData();
+    }
+
+    private void showSortMenu(View view) {
+        if (itemList == null || itemList.isEmpty()) return;
+
+        PopupMenu popup = new PopupMenu(this, view);
+        popup.getMenu().add("Price: Low to High");
+        popup.getMenu().add("Price: High to Low");
+        popup.getMenu().add("Stock: Low to High");
+        popup.getMenu().add("Stock: High to Low");
+        popup.getMenu().add("Original Order");
+
+        popup.setOnMenuItemClickListener(item -> {
+            String title = item.getTitle().toString();
+            switch (title) {
+                case "Price: Low to High":
+                    Collections.sort(itemList, (a, b) -> Double.compare(a.getPrice(), b.getPrice()));
+                    break;
+                case "Price: High to Low":
+                    Collections.sort(itemList, (a, b) -> Double.compare(b.getPrice(), a.getPrice()));
+                    break;
+                case "Stock: Low to High":
+                    Collections.sort(itemList, (a, b) -> Integer.compare(a.getQuantity(), b.getQuantity()));
+                    break;
+                case "Stock: High to Low":
+                    Collections.sort(itemList, (a, b) -> Integer.compare(b.getQuantity(), a.getQuantity()));
+                    break;
+                case "Original Order":
+                    itemList.clear();
+                    itemList.addAll(originalList);
+                    break;
+            }
+            if (adapter != null) {
+                adapter.updateList(itemList);
+            }
+            Toast.makeText(this, "Sorted by: " + title, Toast.LENGTH_SHORT).show();
+            return true;
+        });
+        popup.show();
     }
 
     private void showAllItems() {
@@ -128,7 +171,6 @@ private boolean isSortedByCategory = false;
     public void onCategoryClick(String category) {
         etSearch.setText(category);
         toggleGroupFilter.check(R.id.btnAllItems);
-        // filterItems will be called by TextWatcher
     }
 
     private void setupBottomNavigation() {
@@ -205,22 +247,18 @@ private boolean isSortedByCategory = false;
     }
 
     private void loadData() {
-    dbHelper.getAllItems(items -> {
-        itemList = items;
-
-        // ⭐ Save original list
-        originalList = new java.util.ArrayList<>(items);
-
-        adapter = new InventoryAdapter(
-                DashboardActivity.this,
-                itemList,
-                DashboardActivity.this
-        );
-        recyclerView.setAdapter(adapter);
-        updateStats();
-    });
-}
-
+        dbHelper.getAllItems(items -> {
+            itemList = items;
+            originalList = new ArrayList<>(items);
+            adapter = new InventoryAdapter(
+                    DashboardActivity.this,
+                    itemList,
+                    DashboardActivity.this
+            );
+            recyclerView.setAdapter(adapter);
+            updateStats();
+        });
+    }
 
     private void updateStats() {
         dbHelper.getTotalItems(value ->
@@ -238,9 +276,10 @@ private boolean isSortedByCategory = false;
     private void filterItems(String query) {
         if (query.isEmpty()) {
             dbHelper.getAllItems(items -> {
+                itemList = items;
+                originalList = new ArrayList<>(items);
                 if (adapter != null) {
-                    adapter.updateList(items);
-                    originalList = new java.util.ArrayList<>(items);
+                    adapter.updateList(itemList);
                     if (recyclerView.getAdapter() != adapter) {
                         recyclerView.setAdapter(adapter);
                     }
@@ -248,9 +287,10 @@ private boolean isSortedByCategory = false;
             });
         } else {
             dbHelper.searchItems(query, items -> {
+                itemList = items;
+                originalList = new ArrayList<>(items);
                 if (adapter != null) {
-                    adapter.updateList(items);
-                    originalList = new java.util.ArrayList<>(items);
+                    adapter.updateList(itemList);
                     if (recyclerView.getAdapter() != adapter) {
                         recyclerView.setAdapter(adapter);
                     }
@@ -288,6 +328,36 @@ private boolean isSortedByCategory = false;
     }
 
     @Override
+    public void onItemClick(InventoryItem item) {
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_audit_history, null);
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(dialogView)
+                .create();
+
+        TextView tvDialogTitle = dialogView.findViewById(R.id.tvDialogTitle);
+        tvDialogTitle.setText(item.getName() + " History");
+
+        RecyclerView rvAuditHistory = dialogView.findViewById(R.id.rvAuditHistory);
+        TextView tvNoHistory = dialogView.findViewById(R.id.tvNoHistory);
+        rvAuditHistory.setLayoutManager(new LinearLayoutManager(this));
+
+        dbHelper.getAuditLogsByItem(item.getId(), logs -> {
+            if (logs == null || logs.isEmpty()) {
+                tvNoHistory.setVisibility(View.VISIBLE);
+                rvAuditHistory.setVisibility(View.GONE);
+            } else {
+                tvNoHistory.setVisibility(View.GONE);
+                rvAuditHistory.setVisibility(View.VISIBLE);
+                AuditLogAdapter logAdapter = new AuditLogAdapter(logs);
+                rvAuditHistory.setAdapter(logAdapter);
+            }
+        });
+
+        dialogView.findViewById(R.id.btnCloseDialog).setOnClickListener(v -> dialog.dismiss());
+        dialog.show();
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         if (toggleGroupFilter.getCheckedButtonId() == R.id.btnCategories) {
@@ -296,36 +366,5 @@ private boolean isSortedByCategory = false;
             loadData();
         }
     }
-    private boolean isSorted = false;
-private List<InventoryItem> originalList;
-
-
-
-private void toggleSortByPrice() {
-
-    if (itemList == null || adapter == null) return;
-
-    if (!isSorted) {
-        originalList = new java.util.ArrayList<>(itemList);
-
-        java.util.Collections.sort(itemList, (a, b) ->
-                Double.compare(a.getPrice(), b.getPrice())
-        );
-
-        Toast.makeText(this, "Sorted by Price", Toast.LENGTH_SHORT).show();
-        isSorted = true;
-
-    } else {
-        itemList.clear();
-        itemList.addAll(originalList);
-
-        Toast.makeText(this, "Original Order Restored", Toast.LENGTH_SHORT).show();
-        isSorted = false;
-    }
-
-    adapter.updateList(itemList);
-}
 
 }
-
-

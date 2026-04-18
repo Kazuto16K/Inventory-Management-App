@@ -11,13 +11,6 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import android.net.Uri;
-import android.widget.ImageView;
-import androidx.activity.result.contract.ActivityResultContracts;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import java.util.UUID;
-
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -36,18 +29,6 @@ import java.util.Locale;
 public class AddItemActivity extends AppCompatActivity {
 
     private static final int CAMERA_PERMISSION_REQUEST = 101;
-
-    private ImageView ivProductPreview;
-    private Button btnSelectImage;
-    private Uri imageUri;
-
-    private final ActivityResultLauncher<Intent> imagePickerLauncher =
-            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                    imageUri = result.getData().getData();
-                    if (ivProductPreview != null) ivProductPreview.setImageURI(imageUri);
-                }
-            });
 
     private EditText etBarcode, etItemName, etQuantity, etPrice, etDescription, etMinStock;
     private Spinner spinnerCategory;
@@ -78,15 +59,6 @@ public class AddItemActivity extends AppCompatActivity {
         btnSave       = findViewById(R.id.btnSave);
         btnCancel     = findViewById(R.id.btnCancel);
         tilBarcode    = findViewById(R.id.tilBarcode);
-
-        ivProductPreview = findViewById(R.id.ivProductPreview);
-        btnSelectImage   = findViewById(R.id.btnSelectImage);
-
-        btnSelectImage.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-            intent.setType("image/*");
-            imagePickerLauncher.launch(intent);
-        });
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_spinner_item, categories);
@@ -243,26 +215,6 @@ public class AddItemActivity extends AppCompatActivity {
                 description, minStock, createdAt, null
         );
 
-        if (imageUri != null) {
-            Toast.makeText(this, "Uploading image...", Toast.LENGTH_SHORT).show();
-            StorageReference storageRef = FirebaseStorage.getInstance().getReference()
-                    .child("productImages/" + UUID.randomUUID().toString());
-            
-            storageRef.putFile(imageUri).addOnSuccessListener(taskSnapshot -> {
-                storageRef.getDownloadUrl().addOnSuccessListener(uri -> {
-                    item.setImageUrl(uri.toString());
-                    saveItemToDB(item);
-                });
-            }).addOnFailureListener(e -> {
-                Toast.makeText(this, "Image upload failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                saveItemToDB(item);
-            });
-        } else {
-            saveItemToDB(item);
-        }
-    }
-
-    private void saveItemToDB(InventoryItem item) {
         dbHelper.addItem(item, success -> {
             if (success) {
                 Toast.makeText(this, "Item added successfully!", Toast.LENGTH_SHORT).show();
