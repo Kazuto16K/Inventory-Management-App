@@ -18,6 +18,7 @@ import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.HorizontalBarChart;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
@@ -143,6 +144,28 @@ public class ReportsActivity extends AppCompatActivity {
         });
     }
 
+    private void applyChartTheme(com.github.mikephil.charting.charts.Chart<?> chart) {
+        boolean isDarkMode = (getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK) 
+                == android.content.res.Configuration.UI_MODE_NIGHT_YES;
+        
+        int textColor = isDarkMode ? Color.WHITE : Color.BLACK;
+
+        chart.getLegend().setTextColor(textColor);
+        chart.getDescription().setTextColor(textColor);
+
+        if (chart instanceof com.github.mikephil.charting.charts.BarLineChartBase) {
+            com.github.mikephil.charting.charts.BarLineChartBase<?> baseChart = (com.github.mikephil.charting.charts.BarLineChartBase<?>) chart;
+            XAxis xAxis = baseChart.getXAxis();
+            xAxis.setTextColor(textColor);
+            
+            YAxis leftAxis = baseChart.getAxisLeft();
+            leftAxis.setTextColor(textColor);
+            
+            YAxis rightAxis = baseChart.getAxisRight();
+            rightAxis.setTextColor(textColor);
+        }
+    }
+
     private void showSalesGrowth() {
         tvChartTitle.setText("Sales Performance (Last 7 Days)");
         lineChart.setVisibility(View.VISIBLE);
@@ -189,6 +212,8 @@ public class ReportsActivity extends AppCompatActivity {
         dataSet.setCircleColor(ContextCompat.getColor(this, R.color.chart_orange));
         dataSet.setFillDrawable(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, 
                 new int[]{Color.argb(100, 255, 152, 0), Color.TRANSPARENT}));
+        dataSet.setValueTextColor((getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK) 
+                == android.content.res.Configuration.UI_MODE_NIGHT_YES ? Color.WHITE : Color.BLACK);
 
         lineChart.setData(new LineData(dataSet));
         lineChart.getXAxis().setValueFormatter(new IndexAxisValueFormatter(labels));
@@ -196,6 +221,8 @@ public class ReportsActivity extends AppCompatActivity {
         lineChart.getXAxis().setGranularity(1f);
         lineChart.getAxisRight().setEnabled(false);
         lineChart.getDescription().setEnabled(false);
+        
+        applyChartTheme(lineChart);
         lineChart.invalidate();
 
         showTopProducts();
@@ -227,6 +254,8 @@ public class ReportsActivity extends AppCompatActivity {
 
         BarDataSet dataSet = new BarDataSet(entries, "Stock Count");
         dataSet.setColor(ContextCompat.getColor(this, R.color.chart_blue));
+        dataSet.setValueTextColor((getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK) 
+                == android.content.res.Configuration.UI_MODE_NIGHT_YES ? Color.WHITE : Color.BLACK);
         
         barChart.setData(new BarData(dataSet));
         barChart.getXAxis().setValueFormatter(new IndexAxisValueFormatter(labels));
@@ -234,6 +263,8 @@ public class ReportsActivity extends AppCompatActivity {
         barChart.getXAxis().setGranularity(1f);
         barChart.getAxisRight().setEnabled(false);
         barChart.getDescription().setEnabled(false);
+        
+        applyChartTheme(barChart);
         barChart.invalidate();
 
         showLowStockInsights();
@@ -297,6 +328,8 @@ public class ReportsActivity extends AppCompatActivity {
 
         BarDataSet dataSet = new BarDataSet(entries, "Revenue");
         dataSet.setColor(ContextCompat.getColor(this, R.color.chart_green));
+        dataSet.setValueTextColor((getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK) 
+                == android.content.res.Configuration.UI_MODE_NIGHT_YES ? Color.WHITE : Color.BLACK);
         
         horizontalBarChart.setData(new BarData(dataSet));
         horizontalBarChart.getXAxis().setValueFormatter(new IndexAxisValueFormatter(labels));
@@ -304,6 +337,8 @@ public class ReportsActivity extends AppCompatActivity {
         horizontalBarChart.getXAxis().setGranularity(1f);
         horizontalBarChart.getAxisRight().setEnabled(false);
         horizontalBarChart.getDescription().setEnabled(false);
+        
+        applyChartTheme(horizontalBarChart);
         horizontalBarChart.invalidate();
     }
 
@@ -334,6 +369,8 @@ public class ReportsActivity extends AppCompatActivity {
 
         BarDataSet dataSet = new BarDataSet(entries, "Current Qty");
         dataSet.setColor(Color.parseColor("#E53935")); // Material Red
+        dataSet.setValueTextColor((getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK) 
+                == android.content.res.Configuration.UI_MODE_NIGHT_YES ? Color.WHITE : Color.BLACK);
         
         horizontalBarChart.setData(new BarData(dataSet));
         horizontalBarChart.getXAxis().setValueFormatter(new IndexAxisValueFormatter(labels));
@@ -341,6 +378,8 @@ public class ReportsActivity extends AppCompatActivity {
         horizontalBarChart.getXAxis().setGranularity(1f);
         horizontalBarChart.getAxisRight().setEnabled(false);
         horizontalBarChart.getDescription().setEnabled(false);
+        
+        applyChartTheme(horizontalBarChart);
         horizontalBarChart.invalidate();
     }
 

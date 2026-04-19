@@ -18,6 +18,7 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -62,11 +63,13 @@ public class DashboardActivity extends AppCompatActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        sessionManager = new SessionManager(this);
+        AppCompatDelegate.setDefaultNightMode(sessionManager.getNightMode());
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
 
         dbHelper = new DatabaseHelper(this);
-        sessionManager = new SessionManager(this);
 
         isAdmin = sessionManager.getRole().equals("admin");
 

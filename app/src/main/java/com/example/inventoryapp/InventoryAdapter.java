@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -63,28 +64,46 @@ public class InventoryAdapter extends RecyclerView.Adapter<InventoryAdapter.View
             holder.ivProductImage.setImageResource(R.drawable.app_logo);
         }
 
-        // Stock status color coding
+        // Dark mode compatible status coloring
+        int redColor = ContextCompat.getColor(context, R.color.status_red);
+        int orangeColor = ContextCompat.getColor(context, R.color.status_orange);
+        int greenColor = ContextCompat.getColor(context, R.color.status_green);
+        int surfaceColor = ContextCompat.getColor(context, R.color.surface);
+
         if (item.isOutOfStock()) {
             holder.tvStatus.setText("OUT OF STOCK");
-            holder.tvStatus.setTextColor(Color.parseColor("#F44336"));
-            holder.tvQuantity.setTextColor(Color.parseColor("#F44336"));
-            holder.cardView.setCardBackgroundColor(Color.parseColor("#FFEBEE"));
+            holder.tvStatus.setTextColor(redColor);
+            holder.tvQuantity.setTextColor(redColor);
+            
+            // Subtle tinted background for status indication
+            if ((context.getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK) 
+                    == android.content.res.Configuration.UI_MODE_NIGHT_YES) {
+                holder.cardView.setCardBackgroundColor(Color.parseColor("#332222")); // Dark Red tint
+            } else {
+                holder.cardView.setCardBackgroundColor(Color.parseColor("#FFEBEE")); // Light Red tint
+            }
+            
         } else if (item.isLowStock()) {
             holder.tvStatus.setText("LOW STOCK");
-            holder.tvStatus.setTextColor(Color.parseColor("#FF9800"));
-            holder.tvQuantity.setTextColor(Color.parseColor("#FF9800"));
-            holder.cardView.setCardBackgroundColor(Color.parseColor("#FFF8E1"));
+            holder.tvStatus.setTextColor(orangeColor);
+            holder.tvQuantity.setTextColor(orangeColor);
+            
+            if ((context.getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK) 
+                    == android.content.res.Configuration.UI_MODE_NIGHT_YES) {
+                holder.cardView.setCardBackgroundColor(Color.parseColor("#332B22")); // Dark Orange tint
+            } else {
+                holder.cardView.setCardBackgroundColor(Color.parseColor("#FFF8E1")); // Light Orange tint
+            }
+            
         } else {
             holder.tvStatus.setText("IN STOCK");
-            holder.tvStatus.setTextColor(Color.parseColor("#4CAF50"));
-            holder.tvQuantity.setTextColor(Color.parseColor("#4CAF50"));
-            holder.cardView.setCardBackgroundColor(Color.WHITE);
+            holder.tvStatus.setTextColor(greenColor);
+            holder.tvQuantity.setTextColor(greenColor);
+            holder.cardView.setCardBackgroundColor(surfaceColor);
         }
 
         holder.btnEdit.setOnClickListener(v -> listener.onEdit(item));
         holder.btnDelete.setOnClickListener(v -> listener.onDelete(item));
-        
-        // ⭐ NEW: Click listener for the whole card to show history
         holder.itemView.setOnClickListener(v -> listener.onItemClick(item));
     }
 
@@ -118,6 +137,4 @@ public class InventoryAdapter extends RecyclerView.Adapter<InventoryAdapter.View
             btnDelete = itemView.findViewById(R.id.btnDelete);
         }
     }
-
-
 }

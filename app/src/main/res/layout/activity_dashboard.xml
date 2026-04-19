@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F7FA">
+    android:background="@color/background">
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/nestedScrollView"
@@ -50,7 +50,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
-                app:cardBackgroundColor="@android:color/white"
+                app:cardBackgroundColor="@color/surface"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="8dp"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -84,7 +84,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Total Items"
-                                android:textColor="#8A8A8A"
+                                android:textColor="@color/text_secondary"
                                 android:textSize="12sp"
                                 android:textAlignment="center"/>
 
@@ -94,7 +94,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="4dp"
                                 android:text="0"
-                                android:textColor="#252F6B"
+                                android:textColor="@color/primary"
                                 android:textSize="20sp"
                                 android:textStyle="bold" />
                         </LinearLayout>
@@ -110,7 +110,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Low Stock"
-                                android:textColor="#8A8A8A"
+                                android:textColor="@color/text_secondary"
                                 android:textSize="12sp"
                                 android:textAlignment="center"/>
 
@@ -120,7 +120,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="4dp"
                                 android:text="0"
-                                android:textColor="#FF9800"
+                                android:textColor="@color/status_orange"
                                 android:textSize="20sp"
                                 android:textStyle="bold" />
                         </LinearLayout>
@@ -136,7 +136,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Out of Stock"
-                                android:textColor="#8A8A8A"
+                                android:textColor="@color/text_secondary"
                                 android:textSize="12sp"
                                 android:textAlignment="center"/>
 
@@ -146,7 +146,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="4dp"
                                 android:text="0"
-                                android:textColor="#F44336"
+                                android:textColor="@color/status_red"
                                 android:textSize="20sp"
                                 android:textStyle="bold" />
                         </LinearLayout>
@@ -157,7 +157,7 @@
                         android:layout_height="1dp"
                         android:layout_marginTop="16dp"
                         android:layout_marginBottom="16dp"
-                        android:background="#EFEFEF"/>
+                        android:background="@color/divider"/>
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -169,7 +169,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Total Value"
-                            android:textColor="#8A8A8A"
+                            android:textColor="@color/text_secondary"
                             android:textSize="14sp"
                             android:textAlignment="center"/>
 
@@ -179,7 +179,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
                             android:text="₹0"
-                            android:textColor="#4CAF50"
+                            android:textColor="@color/status_green"
                             android:textSize="32sp"
                             android:textStyle="bold" />
                     </LinearLayout>
@@ -208,12 +208,14 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:hint="Search items..."
+                        app:hintTextColor="@color/text_secondary"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etSearch"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"/>
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/text_primary"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <ImageButton
@@ -222,7 +224,7 @@
                         android:layout_height="52dp"
                         android:layout_marginStart="8dp"
                         android:src="@android:drawable/ic_menu_camera"
-                        android:background="?attr/colorPrimary"
+                        android:background="#252F6B"
                         app:tint="@android:color/white"
                         android:padding="10dp"
                         android:contentDescription="Scan to search"/>
@@ -243,7 +245,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="All Items" />
+                        android:text="All Items"
+                        android:textColor="@color/text_primary" />
 
                     <Button
                         android:id="@+id/btnCategories"
@@ -251,7 +254,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Categories" />
+                        android:text="Categories"
+                        android:textColor="@color/text_primary" />
 
 
                 </com.google.android.material.button.MaterialButtonToggleGroup>
@@ -262,8 +266,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Sort Options"
+                    android:textColor="@color/text_primary"
                     app:icon="@android:drawable/ic_menu_sort_by_size"
-                    app:iconGravity="textStart" />
+                    app:iconGravity="textStart"
+                    app:iconTint="@color/text_primary" />
 
                 <TextView
                     android:id="@+id/tvSectionLabel"
@@ -289,7 +295,7 @@
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/colorSurface"
+        android:background="@color/surface"
         app:elevation="16dp"
         app:menu="@menu/bottom_nav_menu"
         app:labelVisibilityMode="labeled"

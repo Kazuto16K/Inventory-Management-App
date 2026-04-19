@@ -22,4 +22,7 @@
     <color name="chart_yellow">#FFEB3B</color>
     <color name="orange_gradient_start">#FFB74D</color>
     <color name="orange_gradient_end">#FF9800</color>
+
+    <color name="nav_item_selected">#252F6B</color>
+    <color name="nav_item_unselected">#8A8A8A</color>
 </resources>
