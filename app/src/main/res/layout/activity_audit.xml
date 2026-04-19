@@ -28,7 +28,7 @@
                 android:id="@+id/btnExportExcel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Export to Excel"
+                android:text="Export CSV"
                 android:layout_marginTop="24dp"/>
 
         </LinearLayout>

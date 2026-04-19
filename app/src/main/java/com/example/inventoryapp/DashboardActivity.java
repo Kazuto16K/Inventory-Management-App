@@ -184,7 +184,7 @@ public class DashboardActivity extends AppCompatActivity
                 startActivity(new Intent(this, SellStockActivity.class));
                 return true;
             } else if (id == R.id.nav_reports) {
-                startActivity(new Intent(this, Reports.class));
+                startActivity(new Intent(this, ReportsActivity.class));
                 return true;
             } else if (id == R.id.nav_add) {
                 startActivity(new Intent(this, AddItemActivity.class));

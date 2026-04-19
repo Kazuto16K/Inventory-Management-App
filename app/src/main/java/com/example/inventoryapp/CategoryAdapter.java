@@ -5,11 +5,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +24,9 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
     private List<String> categories;
     private OnCategoryClickListener listener;
     private Map<String, Integer> categoryIcons;
+    private DatabaseHelper dbHelper;
+
+    private int expandedPosition = -1;
 
     public interface OnCategoryClickListener {
         void onCategoryClick(String category);
@@ -29,6 +36,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
         this.context = context;
         this.categories = categories;
         this.listener = listener;
+        this.dbHelper = new DatabaseHelper(context);
         initCategoryIcons();
     }
 
@@ -63,8 +71,33 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
             iconRes = R.drawable.ic_category_default;
         }
         holder.ivCategoryImage.setImageResource(iconRes);
+
+        boolean isExpanded = position == expandedPosition;
+        holder.expandedSection.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
+        holder.ivArrow.setRotation(isExpanded ? 180 : 0);
+
+        if (isExpanded) {
+            holder.progressBar.setVisibility(View.VISIBLE);
+            holder.rvCategoryItems.setVisibility(View.GONE);
+            dbHelper.getItemsByCategory(category, items -> {
+                holder.progressBar.setVisibility(View.GONE);
+                holder.rvCategoryItems.setVisibility(View.VISIBLE);
+                InventoryAdapter itemAdapter = new InventoryAdapter(context, items, (InventoryAdapter.OnItemActionListener) context);
+                holder.rvCategoryItems.setLayoutManager(new LinearLayoutManager(context));
+                holder.rvCategoryItems.setAdapter(itemAdapter);
+            });
+        }
         
-        holder.itemView.setOnClickListener(v -> listener.onCategoryClick(category));
+        holder.headerLayout.setOnClickListener(v -> {
+            int previousExpandedPosition = expandedPosition;
+            if (isExpanded) {
+                expandedPosition = -1;
+            } else {
+                expandedPosition = position;
+            }
+            notifyItemChanged(previousExpandedPosition);
+            notifyItemChanged(expandedPosition);
+        });
     }
 
     @Override
@@ -75,11 +108,21 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvCategoryName;
         ImageView ivCategoryImage;
+        ImageView ivArrow;
+        LinearLayout headerLayout;
+        LinearLayout expandedSection;
+        RecyclerView rvCategoryItems;
+        ProgressBar progressBar;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvCategoryName = itemView.findViewById(R.id.tvCategoryName);
             ivCategoryImage = itemView.findViewById(R.id.ivCategoryImage);
+            ivArrow = itemView.findViewById(R.id.ivArrow);
+            headerLayout = itemView.findViewById(R.id.headerLayout);
+            expandedSection = itemView.findViewById(R.id.expandedSection);
+            rvCategoryItems = itemView.findViewById(R.id.rvCategoryItems);
+            progressBar = itemView.findViewById(R.id.progressBar);
         }
     }
 }

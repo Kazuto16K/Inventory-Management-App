@@ -221,7 +221,7 @@ public class EditItemActivity extends AppCompatActivity {
         bottomNavigation.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
             if (id == R.id.nav_reports) {
-                startActivity(new Intent(this, Reports.class));
+                startActivity(new Intent(this, ReportsActivity.class));
                 finish();
                 return true;
             } else if (id == R.id.nav_sell) {

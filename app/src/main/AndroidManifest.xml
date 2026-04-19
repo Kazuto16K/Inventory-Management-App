@@ -28,7 +28,7 @@
         android:theme="@style/Theme.InventoryApp">
 
         <activity
-            android:name=".LoginActivity"
+            android:name=".SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -36,11 +36,11 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".LoginActivity" android:exported="false"/>
         <activity android:name=".RegisterActivity" android:exported="false"/>
         <activity android:name=".DashboardActivity" android:exported="false"/>
         <activity android:name=".AddItemActivity" android:exported="false"/>
         <activity android:name=".EditItemActivity" android:exported="false"/>
-        <activity android:name=".Reports" android:exported="false"/>
         <activity android:name=".ReportsActivity" android:exported="false"/>
         <activity android:name=".SellStockActivity" android:exported="false"/>
         <activity android:name=".AuditActivity" android:exported="false"/>
