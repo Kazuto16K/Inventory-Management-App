@@ -11,11 +11,11 @@ package com.example.inventoryapp;
 public class SecretConfig {
     
     // 1. Enter your full Gmail address here
-    public static final String SENDER_EMAIL = "soumajithdas@gmail.com";
+    public static final String SENDER_EMAIL = "";
     
     // 2. Enter the 16-character App Password (without spaces)
-    public static final String APP_PASSWORD = "fydblqbbzgyrbfkg";
+    public static final String APP_PASSWORD = "";
     
     // Global admin passcode if needed for other features
-    public static final String ADMIN_OVERRIDE_PASSCODE = "123456";
+    public static final String ADMIN_OVERRIDE_PASSCODE = "";
 }
