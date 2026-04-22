@@ -58,6 +58,10 @@ public class DatabaseHelper {
         void onCallback(List<AuditLog> logs);
     }
 
+    public interface UserListCallback {
+        void onCallback(List<Map<String, Object>> users);
+    }
+
 
     // ================= USER METHODS =================
 
@@ -73,6 +77,9 @@ public class DatabaseHelper {
         user.put("email", email);
         user.put("password", password);
         user.put("role", role);
+        // Default approved to true for admins, false for employees
+        user.put("approved", "admin".equalsIgnoreCase(role));
+        user.put("isLoggedIn", false);
 
         db.collection("users")
                 .document(email)
@@ -102,6 +109,27 @@ public class DatabaseHelper {
                             storedPassword != null &&
                                     storedPassword.equals(password)
                     );
+                })
+                .addOnFailureListener(e -> callback.onCallback(false));
+    }
+
+    public void setUserLoginStatus(String email, boolean status) {
+        db.collection("users")
+                .document(email)
+                .update("isLoggedIn", status);
+    }
+
+    public void isUserApproved(String email, BooleanCallback callback) {
+        db.collection("users")
+                .document(email)
+                .get()
+                .addOnSuccessListener(doc -> {
+                    if (doc.exists()) {
+                        Boolean approved = doc.getBoolean("approved");
+                        callback.onCallback(approved != null && approved);
+                    } else {
+                        callback.onCallback(false);
+                    }
                 })
                 .addOnFailureListener(e -> callback.onCallback(false));
     }
@@ -163,6 +191,52 @@ public class DatabaseHelper {
                 })
                 .addOnFailureListener(e ->
                         callback.onCallback(""));
+    }
+
+    public void getAllEmployees(boolean approved, UserListCallback callback) {
+        db.collection("users")
+                .whereEqualTo("role", "employee")
+                .whereEqualTo("approved", approved)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    List<Map<String, Object>> users = new ArrayList<>();
+                    for (DocumentSnapshot doc : snapshot) {
+                        users.add(doc.getData());
+                    }
+                    callback.onCallback(users);
+                })
+                .addOnFailureListener(e -> callback.onCallback(new ArrayList<>()));
+    }
+
+    public void getLoggedInEmployees(UserListCallback callback) {
+        db.collection("users")
+                .whereEqualTo("role", "employee")
+                .whereEqualTo("isLoggedIn", true)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    List<Map<String, Object>> users = new ArrayList<>();
+                    for (DocumentSnapshot doc : snapshot) {
+                        users.add(doc.getData());
+                    }
+                    callback.onCallback(users);
+                })
+                .addOnFailureListener(e -> callback.onCallback(new ArrayList<>()));
+    }
+
+    public void approveUser(String email, BooleanCallback callback) {
+        db.collection("users")
+                .document(email)
+                .update("approved", true)
+                .addOnSuccessListener(a -> callback.onCallback(true))
+                .addOnFailureListener(e -> callback.onCallback(false));
+    }
+
+    public void deleteUser(String email, BooleanCallback callback) {
+        db.collection("users")
+                .document(email)
+                .delete()
+                .addOnSuccessListener(a -> callback.onCallback(true))
+                .addOnFailureListener(e -> callback.onCallback(false));
     }
 
 

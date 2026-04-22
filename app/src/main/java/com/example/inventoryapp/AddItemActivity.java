@@ -6,11 +6,13 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -39,24 +41,22 @@ public class AddItemActivity extends AppCompatActivity {
     private static final int CAMERA_PERMISSION_FOR_IMAGE = 102;
 
     private EditText etBarcode, etItemName, etQuantity, etPrice, etDescription, etMinStock;
+    private TextView tvExistingStock;
     private Spinner spinnerCategory;
     private Button btnSave, btnCancel, btnSelectImage;
     private ImageView ivProductPreview;
     private TextInputLayout tilBarcode;
     private DatabaseHelper dbHelper;
+    private SessionManager sessionManager;
     private String[] categories = {"Electronics", "Clothing", "Food & Beverage", "Furniture",
             "Tools", "Stationery", "Medicine", "Sports", "Toys", "Other"};
 
-    // Selected image URI (from gallery or camera)
     private Uri selectedImageUri = null;
-    // URI for the camera-captured photo
     private Uri cameraImageUri = null;
 
-    // ── Feature 1: ZXing barcode scanner launcher ──
     private final ActivityResultLauncher<ScanOptions> barcodeLauncher =
             registerForActivityResult(new ScanContract(), this::onScanResult);
 
-    // ── Gallery image picker launcher ──
     private final ActivityResultLauncher<Intent> imagePickerLauncher =
             registerForActivityResult(
                     new ActivityResultContracts.StartActivityForResult(),
@@ -73,7 +73,6 @@ public class AddItemActivity extends AppCompatActivity {
                     }
             );
 
-    // ── Camera capture launcher ──
     private final ActivityResultLauncher<Uri> cameraLauncher =
             registerForActivityResult(
                     new ActivityResultContracts.TakePicture(),
@@ -94,6 +93,7 @@ public class AddItemActivity extends AppCompatActivity {
         setContentView(R.layout.activity_add_item);
 
         dbHelper = new DatabaseHelper(this);
+        sessionManager = new SessionManager(this);
 
         etBarcode     = findViewById(R.id.etBarcode);
         etItemName    = findViewById(R.id.etItemName);
@@ -101,6 +101,7 @@ public class AddItemActivity extends AppCompatActivity {
         etPrice       = findViewById(R.id.etPrice);
         etDescription = findViewById(R.id.etDescription);
         etMinStock    = findViewById(R.id.etMinStock);
+        tvExistingStock = findViewById(R.id.tvExistingStock);
         spinnerCategory = findViewById(R.id.spinnerCategory);
         btnSave       = findViewById(R.id.btnSave);
         btnCancel     = findViewById(R.id.btnCancel);
@@ -117,15 +118,11 @@ public class AddItemActivity extends AppCompatActivity {
         btnCancel.setOnClickListener(v -> finish());
         btnSelectImage.setOnClickListener(v -> showImageSourceDialog());
 
-        // ── Feature 1: Launch scanner when scan button tapped ──
         tilBarcode.setEndIconOnClickListener(v -> launchScanner());
 
         setupBottomNavigation();
     }
 
-    /**
-     * Shows a dialog letting the user choose between Camera and Gallery.
-     */
     private void showImageSourceDialog() {
         String[] options = {"📷  Take Photo", "🖼️  Choose from Gallery"};
 
@@ -133,10 +130,8 @@ public class AddItemActivity extends AppCompatActivity {
                 .setTitle("Select Image")
                 .setItems(options, (dialog, which) -> {
                     if (which == 0) {
-                        // Camera
                         openCamera();
                     } else {
-                        // Gallery
                         openGallery();
                     }
                 })
@@ -144,9 +139,6 @@ public class AddItemActivity extends AppCompatActivity {
                 .show();
     }
 
-    /**
-     * Opens the camera to capture a product image.
-     */
     private void openCamera() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -159,7 +151,6 @@ public class AddItemActivity extends AppCompatActivity {
     }
 
     private void launchCamera() {
-        // Create a temp file in cache for the camera to write to
         File photoFile = new File(getCacheDir(), "product_photo_" + System.currentTimeMillis() + ".jpg");
         cameraImageUri = FileProvider.getUriForFile(this,
                 getApplicationContext().getPackageName() + ".fileprovider",
@@ -167,9 +158,6 @@ public class AddItemActivity extends AppCompatActivity {
         cameraLauncher.launch(cameraImageUri);
     }
 
-    /**
-     * Opens the system image picker to choose a product image.
-     */
     private void openGallery() {
         Intent intent = new Intent(Intent.ACTION_PICK);
         intent.setType("image/*");
@@ -204,7 +192,6 @@ public class AddItemActivity extends AppCompatActivity {
         });
     }
 
-    // ── Feature 1: Request camera permission then launch ZXing ──
     private void launchScanner() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -225,7 +212,6 @@ public class AddItemActivity extends AppCompatActivity {
         barcodeLauncher.launch(options);
     }
 
-    // ── Feature 1: Handle scan result ──
     private void onScanResult(ScanIntentResult result) {
         if (result.getContents() != null) {
             String scannedBarcode = result.getContents();
@@ -243,8 +229,11 @@ public class AddItemActivity extends AppCompatActivity {
             if (item != null) {
                 etItemName.setText(item.getName());
                 etPrice.setText(String.valueOf(item.getPrice()));
+                
+                // Show existing stock
+                tvExistingStock.setVisibility(View.VISIBLE);
+                tvExistingStock.setText("Existing Stock: " + item.getQuantity());
 
-                // Set category spinner
                 if (item.getCategory() != null) {
                     for (int i = 0; i < categories.length; i++) {
                         if (categories[i].equals(item.getCategory())) {
@@ -258,7 +247,16 @@ public class AddItemActivity extends AppCompatActivity {
                     etDescription.setText(item.getDescription());
                 }
 
+                if (item.getImageUrl() != null) {
+                    Glide.with(this)
+                            .load(item.getImageUrl())
+                            .centerCrop()
+                            .into(ivProductPreview);
+                }
+
                 Toast.makeText(this, "Product details auto-filled!", Toast.LENGTH_SHORT).show();
+            } else {
+                tvExistingStock.setVisibility(View.GONE);
             }
         });
     }
@@ -311,52 +309,76 @@ public class AddItemActivity extends AppCompatActivity {
         double price = Double.parseDouble(priceStr);
         int minStock = TextUtils.isEmpty(minStockStr) ? 5 : Integer.parseInt(minStockStr);
 
-        String createdAt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-                .format(new Date());
-
-        // Disable save button to prevent double-tap
         btnSave.setEnabled(false);
-        btnSave.setText("Saving...");
+        btnSave.setText("Processing...");
+
+        if (!TextUtils.isEmpty(barcode)) {
+            dbHelper.getItemByBarcode(barcode, existingItem -> {
+                if (existingItem != null) {
+                    existingItem.setName(name);
+                    existingItem.setCategory(category);
+                    existingItem.setQuantity(existingItem.getQuantity() + quantity);
+                    existingItem.setPrice(price);
+                    existingItem.setDescription(description);
+                    existingItem.setMinStock(minStock);
+
+                    if (selectedImageUri != null) {
+                        CloudinaryHelper.uploadImage(this, selectedImageUri, new CloudinaryHelper.UploadCallback() {
+                            @Override
+                            public void onSuccess(String imageUrl) {
+                                existingItem.setImageUrl(imageUrl);
+                                updateItemInFirestore(existingItem, quantity);
+                            }
+                            @Override
+                            public void onFailure(String errorMessage) {
+                                btnSave.setEnabled(true);
+                                btnSave.setText("Save Item");
+                                Toast.makeText(AddItemActivity.this, "Image upload failed: " + errorMessage, Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    } else {
+                        updateItemInFirestore(existingItem, quantity);
+                    }
+                } else {
+                    createNewItem(barcode, name, quantity, price, description, minStock, category);
+                }
+            });
+        } else {
+            createNewItem(barcode, name, quantity, price, description, minStock, category);
+        }
+    }
+
+    private void createNewItem(String barcode, String name, int quantity, double price, String description, int minStock, String category) {
+        String createdAt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
 
         if (selectedImageUri != null) {
-            // Upload image to Cloudinary first, then save item with URL
-            Toast.makeText(this, "Uploading image...", Toast.LENGTH_SHORT).show();
-
             CloudinaryHelper.uploadImage(this, selectedImageUri, new CloudinaryHelper.UploadCallback() {
                 @Override
                 public void onSuccess(String imageUrl) {
-                    InventoryItem item = new InventoryItem(
-                            name, barcode, category, quantity, price,
-                            description, minStock, createdAt, imageUrl
-                    );
+                    InventoryItem item = new InventoryItem(name, barcode, category, quantity, price, description, minStock, createdAt, imageUrl);
                     saveItemToFirestore(item);
                 }
-
                 @Override
                 public void onFailure(String errorMessage) {
                     btnSave.setEnabled(true);
                     btnSave.setText("Save Item");
-                    Toast.makeText(AddItemActivity.this,
-                            "Image upload failed: " + errorMessage,
-                            Toast.LENGTH_LONG).show();
+                    Toast.makeText(AddItemActivity.this, "Image upload failed: " + errorMessage, Toast.LENGTH_LONG).show();
                 }
             });
         } else {
-            // No image selected — save item without image (image is optional)
-            InventoryItem item = new InventoryItem(
-                    name, barcode, category, quantity, price,
-                    description, minStock, createdAt, null
-            );
+            InventoryItem item = new InventoryItem(name, barcode, category, quantity, price, description, minStock, createdAt, null);
             saveItemToFirestore(item);
         }
     }
 
-    /**
-     * Saves the InventoryItem to Firestore via DatabaseHelper.
-     */
     private void saveItemToFirestore(InventoryItem item) {
         dbHelper.addItem(item, success -> {
             if (success) {
+                String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
+                AuditLog auditLog = new AuditLog("RESTOCK", item.getName(), item.getId(), item.getQuantity(), 
+                    sessionManager.getUsername(), sessionManager.getEmail(), timestamp, "Initial Stock Added");
+                dbHelper.insertAuditLog(auditLog, s -> {});
+
                 Toast.makeText(this, "Item added successfully!", Toast.LENGTH_SHORT).show();
                 setResult(RESULT_OK);
                 finish();
@@ -364,6 +386,25 @@ public class AddItemActivity extends AppCompatActivity {
                 btnSave.setEnabled(true);
                 btnSave.setText("Save Item");
                 Toast.makeText(this, "Failed to add item", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void updateItemInFirestore(InventoryItem item, int addedQuantity) {
+        dbHelper.updateItem(item, success -> {
+            if (success) {
+                String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
+                AuditLog auditLog = new AuditLog("RESTOCK", item.getName(), item.getId(), addedQuantity, 
+                    sessionManager.getUsername(), sessionManager.getEmail(), timestamp, "Stock Updated (Barcode Match)");
+                dbHelper.insertAuditLog(auditLog, s -> {});
+
+                Toast.makeText(this, "Existing item updated with new stock!", Toast.LENGTH_SHORT).show();
+                setResult(RESULT_OK);
+                finish();
+            } else {
+                btnSave.setEnabled(true);
+                btnSave.setText("Save Item");
+                Toast.makeText(this, "Failed to update item", Toast.LENGTH_SHORT).show();
             }
         });
     }

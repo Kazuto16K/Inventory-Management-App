@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background">
@@ -217,6 +218,17 @@
                             android:layout_height="wrap_content"
                             android:textColor="@color/text_primary"/>
                     </com.google.android.material.textfield.TextInputLayout>
+
+                    <ImageButton
+                        android:id="@+id/btnSearch"
+                        android:layout_width="52dp"
+                        android:layout_height="52dp"
+                        android:layout_marginStart="8dp"
+                        android:src="@android:drawable/ic_menu_search"
+                        android:background="#252F6B"
+                        app:tint="@android:color/white"
+                        android:padding="10dp"
+                        android:contentDescription="Search"/>
 
                     <ImageButton
                         android:id="@+id/btnScanSearch"

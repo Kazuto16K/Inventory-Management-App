@@ -52,9 +52,10 @@ dependencies {
     implementation("com.google.android.gms:play-services-tasks:18.1.0")
     implementation("com.github.bumptech.glide:glide:4.16.0")
 
+    // Email Sending
+    implementation("com.sun.mail:android-mail:1.6.2")
+    implementation("com.sun.mail:android-activation:1.6.2")
+
     // Feature 1: Barcode / QR Code Scanner
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
-
-    // Feature 2: Export — PDF uses built-in android.graphics.pdf.PdfDocument (no extra dep)
-    // CSV uses standard Java I/O (no extra dep)
 }

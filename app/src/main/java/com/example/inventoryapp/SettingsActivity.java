@@ -20,7 +20,7 @@ public class SettingsActivity extends AppCompatActivity {
     private RadioGroup radioGroupTheme;
     private RadioButton radioLight, radioDark, radioSystem;
     private TextView tvProfileName, tvProfileEmail, tvProfileRole;
-    private Button btnLogout, btnViewAudits;
+    private Button btnLogout, btnViewAudits, btnManageEmployees;
     private LinearLayout adminSection;
     private SessionManager sessionManager;
 
@@ -46,6 +46,7 @@ public class SettingsActivity extends AppCompatActivity {
         // Admin views
         adminSection     = findViewById(R.id.adminSection);
         btnViewAudits    = findViewById(R.id.btnViewAudits);
+        btnManageEmployees = findViewById(R.id.btnManageEmployees);
 
         // Appearance views
         radioGroupTheme  = findViewById(R.id.radioGroupTheme);
@@ -65,6 +66,9 @@ public class SettingsActivity extends AppCompatActivity {
             adminSection.setVisibility(View.VISIBLE);
             btnViewAudits.setOnClickListener(v -> {
                 startActivity(new Intent(this, AuditActivity.class));
+            });
+            btnManageEmployees.setOnClickListener(v -> {
+                startActivity(new Intent(this, UserManagementActivity.class));
             });
         } else {
             adminSection.setVisibility(View.GONE);

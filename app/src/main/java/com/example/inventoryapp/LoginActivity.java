@@ -67,25 +67,34 @@ public class LoginActivity extends AppCompatActivity {
                 return;
             }
 
-            dbHelper.getUserName(email, username -> {
-
-                dbHelper.getUserRole(email, role -> {
-
-                    sessionManager.createLoginSession(
-                            email,
-                            username,
-                            role
-                    );
-
+            // Check if user is approved before proceeding
+            dbHelper.isUserApproved(email, isApproved -> {
+                if (!isApproved) {
                     Toast.makeText(this,
-                            "Welcome back, " + username + "!",
-                            Toast.LENGTH_SHORT).show();
+                            "Your account is pending admin approval.",
+                            Toast.LENGTH_LONG).show();
+                    return;
+                }
 
-                    startActivity(
-                            new Intent(this, DashboardActivity.class)
-                    );
+                dbHelper.getUserName(email, username -> {
+                    dbHelper.getUserRole(email, role -> {
 
-                    finish();
+                        sessionManager.createLoginSession(
+                                email,
+                                username,
+                                role
+                        );
+
+                        Toast.makeText(this,
+                                "Welcome back, " + username + "!",
+                                Toast.LENGTH_SHORT).show();
+
+                        startActivity(
+                                new Intent(this, DashboardActivity.class)
+                        );
+
+                        finish();
+                    });
                 });
             });
         });

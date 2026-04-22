@@ -20,6 +20,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -46,7 +47,7 @@ public class DashboardActivity extends AppCompatActivity
     private InventoryAdapter adapter;
     private CategoryAdapter categoryAdapter;
     private EditText etSearch;
-    private ImageButton btnScanSearch;
+    private ImageButton btnScanSearch, btnSearch;
     private MaterialButtonToggleGroup toggleGroupFilter;
 
     private DatabaseHelper dbHelper;
@@ -83,6 +84,7 @@ public class DashboardActivity extends AppCompatActivity
         etSearch      = findViewById(R.id.etSearch);
         recyclerView  = findViewById(R.id.recyclerView);
         btnScanSearch = findViewById(R.id.btnScanSearch);
+        btnSearch     = findViewById(R.id.btnSearch);
         toggleGroupFilter = findViewById(R.id.toggleGroupFilter);
 
         findViewById(R.id.btnSortOptions).setOnClickListener(this::showSortMenu);
@@ -91,6 +93,7 @@ public class DashboardActivity extends AppCompatActivity
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
+        // Real-time filtering (optional, can be kept or removed based on preference)
         etSearch.addTextChangedListener(new TextWatcher() {
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -100,6 +103,16 @@ public class DashboardActivity extends AppCompatActivity
                 filterItems(s.toString());
             }
             public void afterTextChanged(Editable s) {}
+        });
+
+        // Search Button click listener
+        btnSearch.setOnClickListener(v -> {
+            String query = etSearch.getText().toString().trim();
+            if (toggleGroupFilter.getCheckedButtonId() == R.id.btnCategories) {
+                toggleGroupFilter.check(R.id.btnAllItems);
+            }
+            filterItems(query);
+            Toast.makeText(this, "Searching for: " + query, Toast.LENGTH_SHORT).show();
         });
 
         btnScanSearch.setOnClickListener(v -> launchScanSearch());
@@ -174,6 +187,7 @@ public class DashboardActivity extends AppCompatActivity
     public void onCategoryClick(String category) {
         etSearch.setText(category);
         toggleGroupFilter.check(R.id.btnAllItems);
+        filterItems(category);
     }
 
     private void setupBottomNavigation() {

@@ -44,6 +44,7 @@
         <activity android:name=".ReportsActivity" android:exported="false"/>
         <activity android:name=".SellStockActivity" android:exported="false"/>
         <activity android:name=".AuditActivity" android:exported="false"/>
+        <activity android:name=".UserManagementActivity" android:exported="false"/>
 
         <!-- Feature 3: Settings / Dark Mode -->
         <activity android:name=".SettingsActivity" android:exported="false"/>
