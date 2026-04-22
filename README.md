@@ -351,34 +351,75 @@ implementation("com.sun.mail:android-activation:1.6.2")
 
 ## 📸 Screenshots
 
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/5b7c200c-9430-451f-a2d8-0fe103de7432" width="250"/>
-  <img src="https://github.com/user-attachments/assets/b0ea2eb7-4bad-427d-86c5-05a44f80ee66" width="250"/><br>
-  <b>Dashboard (Light)</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>Dashboard (Dark)</b>
-</p>
+<table align="center">
+<tr>
+<td align="center">
+<img src="https://github.com/user-attachments/assets/5b7c200c-9430-451f-a2d8-0fe103de7432" width="250"/><br>
+<b>Dashboard (Light)</b>
+</td>
+<td width="40"></td>
+<td align="center">
+<img src="https://github.com/user-attachments/assets/b0ea2eb7-4bad-427d-86c5-05a44f80ee66" width="250"/><br>
+<b>Dashboard (Dark)</b>
+</td>
+</tr>
 
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/0ba1c152-4b20-482b-a33c-23881022f0c3" width="250"/>
-  <img src="https://github.com/user-attachments/assets/2f79af9c-d9ca-4e24-98b6-37b81dce352d" width="250"/><br>
-  <b>Search Results</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>Sort Options</b>
-</p>
+<tr><td height="25"></td></tr>
 
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/d98a90ec-6040-40ae-8f8b-e1cdc722c339" width="250"/>
-  <img src="https://github.com/user-attachments/assets/f3b5c122-f0f4-40bf-a20d-a9f878928a50" width="250"/><br>
-  <b>Category View</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>Add Item</b>
-</p>
+<tr>
+<td align="center">
+<img src="https://github.com/user-attachments/assets/0ba1c152-4b20-482b-a33c-23881022f0c3" width="250"/><br>
+<b>Search Results</b>
+</td>
+<td></td>
+<td align="center">
+<img src="https://github.com/user-attachments/assets/2f79af9c-d9ca-4e24-98b6-37b81dce352d" width="250"/><br>
+<b>Sort Options</b>
+</td>
+</tr>
 
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/4ea3d824-01ec-426e-a815-60a23cb4fde3" width="250"/>
-  <img src="https://github.com/user-attachments/assets/986ac458-8e11-4010-85c8-8bc5a0367789" width="250"/><br>
-  <b>Sell Stock / Cart</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>Sales Analytics</b>
-</p>
+<tr><td height="25"></td></tr>
 
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/87850cf6-bb0e-4e2c-8e83-70eb8145f9a6" width="250"/>
-  <img src="https://github.com/user-attachments/assets/83ce5f5d-02bb-4ac9-8610-d23c7dee3640" width="250"/><br>
-  <b>Inventory Health</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>Mail Invoice</b>
-</p>
+<tr>
+<td align="center">
+<img src="https://github.com/user-attachments/assets/d98a90ec-6040-40ae-8f8b-e1cdc722c339" width="250"/><br>
+<b>Category View</b>
+</td>
+<td></td>
+<td align="center">
+<img src="https://github.com/user-attachments/assets/f3b5c122-f0f4-40bf-a20d-a9f878928a50" width="250"/><br>
+<b>Add Item</b>
+</td>
+</tr>
+
+<tr><td height="25"></td></tr>
+
+<tr>
+<td align="center">
+<img src="https://github.com/user-attachments/assets/4ea3d824-01ec-426e-a815-60a23cb4fde3" width="250"/><br>
+<b>Sell Stock / Cart</b>
+</td>
+<td></td>
+<td align="center">
+<img src="https://github.com/user-attachments/assets/986ac458-8e11-4010-85c8-8bc5a0367789" width="250"/><br>
+<b>Sales Analytics</b>
+</td>
+</tr>
+
+<tr><td height="25"></td></tr>
+
+<tr>
+<td align="center">
+<img src="https://github.com/user-attachments/assets/87850cf6-bb0e-4e2c-8e83-70eb8145f9a6" width="250"/><br>
+<b>Inventory Health</b>
+</td>
+<td></td>
+<td align="center">
+<img src="https://github.com/user-attachments/assets/83ce5f5d-02bb-4ac9-8610-d23c7dee3640" width="250"/><br>
+<b>Mail Invoice</b>
+</td>
+</tr>
+
+</table>
 
 ---
