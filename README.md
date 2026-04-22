@@ -351,47 +351,17 @@ implementation("com.sun.mail:android-activation:1.6.2")
 
 ## Screenshots
 
-> 📸 *Screenshots of the working application will be added here.*
-
-<!-- 
-  Suggested screenshots to add:
-  1. Splash Screen
-  2. Login Screen
-  3. Register Screen
-  4. Dashboard - Light Mode (with items loaded)
-  5. Dashboard - Dark Mode
-  6. Dashboard - Search results
-  7. Dashboard - Barcode scanner active
-  8. Dashboard - Sort options popup
-  9. Dashboard - Category view
-  10. Add Item form
-  11. Edit Item form
-  12. Sell Stock screen with cart
-  13. Reports - Sales Analytics view
-  14. Reports - Product Analytics view
-  15. Audit Log screen
-  16. Settings screen (Admin view)
-  17. User Management screen
--->
-
 | Screen | Screenshot |
 |---|---|
-| Splash Screen | *(add screenshot)* |
-| Login | *(add screenshot)* |
-| Register | *(add screenshot)* |
-| Dashboard (Light Mode) | *(add screenshot)* |
-| Dashboard (Dark Mode) | *(add screenshot)* |
-| Search Results | *(add screenshot)* |
-| Barcode Scanner | *(add screenshot)* |
-| Sort Options | *(add screenshot)* |
-| Category View | *(add screenshot)* |
-| Add Item | *(add screenshot)* |
-| Edit Item | *(add screenshot)* |
-| Sell Stock / Cart | *(add screenshot)* |
-| Reports — Sales Analytics | *(add screenshot)* |
-| Reports — Product Analytics | *(add screenshot)* |
-| Audit Log | *(add screenshot)* |
-| Settings | *(add screenshot)* |
-| User Management | *(add screenshot)* |
+| Dashboard (Light Mode) | <img width="720" height="1600" alt="dash_white" src="https://github.com/user-attachments/assets/5b7c200c-9430-451f-a2d8-0fe103de7432" /> |
+| Dashboard (Dark Mode) | <img width="720" height="1600" alt="dash_black" src="https://github.com/user-attachments/assets/b0ea2eb7-4bad-427d-86c5-05a44f80ee66" /> |
+| Search Results | <img width="720" height="1600" alt="search" src="https://github.com/user-attachments/assets/0ba1c152-4b20-482b-a33c-23881022f0c3" /> |
+| Sort Options | <img width="720" height="1600" alt="sort_by" src="https://github.com/user-attachments/assets/2f79af9c-d9ca-4e24-98b6-37b81dce352d" /> |
+| Category View | <img width="720" height="1600" alt="caategory" src="https://github.com/user-attachments/assets/d98a90ec-6040-40ae-8f8b-e1cdc722c339" /> |
+| Add Item | <img width="720" height="1600" alt="add_item" src="https://github.com/user-attachments/assets/f3b5c122-f0f4-40bf-a20d-a9f878928a50" /> |
+| Sell Stock / Cart | <img width="720" height="1600" alt="sell_stock" src="https://github.com/user-attachments/assets/4ea3d824-01ec-426e-a815-60a23cb4fde3" /> |
+| Reports — Sales Analytics | <img width="720" height="1600" alt="sales_growth" src="https://github.com/user-attachments/assets/986ac458-8e11-4010-85c8-8bc5a0367789" /> |
+| Reports — Inventory Health | <img width="720" height="1600" alt="inv_health" src="https://github.com/user-attachments/assets/87850cf6-bb0e-4e2c-8e83-70eb8145f9a6" /> |
+| Mail Invoice| <img width="720" height="1600" alt="mail_invoice" src="https://github.com/user-attachments/assets/83ce5f5d-02bb-4ac9-8610-d23c7dee3640" /> |
 
 ---
